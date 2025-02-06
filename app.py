@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import random
 
 # Function to allocate study time using Weighted Score Method (WSM)
 def wsm_allocation(math, eng, sci, comp, total_study_time):
@@ -14,26 +15,34 @@ def wsm_allocation(math, eng, sci, comp, total_study_time):
         "Computer": round(study_times[3], 2)
     }
 
-# Function to generate an embeddable Google Drive link
-def get_pdf_viewer_link(file_id):
-    return f"https://drive.google.com/file/d/{file_id}/preview"
-
-# Google Drive PDF file IDs
-pdf_drive_links = {
-    "Basics of Computer.pdf": "1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp",  # Computer PDF
-    "10th_Mathematics_English_Medium.pdf": "1Os8nxl_EwyadsKhrAgagmjg3sHTH2Ylc"  # Math PDF
-}
+# Sample Quiz Questions (10 Questions)
+quiz_questions = [
+    ("What is 5 + 3?", ["6", "7", "8", "9"], "8"),
+    ("Which planet is known as the Red Planet?", ["Earth", "Mars", "Jupiter", "Venus"], "Mars"),
+    ("Who wrote 'Hamlet'?", ["Shakespeare", "Dickens", "Austen", "Hemingway"], "Shakespeare"),
+    ("What is the capital of France?", ["London", "Berlin", "Paris", "Madrid"], "Paris"),
+    ("What is H2O?", ["Oxygen", "Water", "Hydrogen", "Helium"], "Water"),
+    ("What is the square root of 64?", ["6", "7", "8", "9"], "8"),
+    ("Which gas do plants absorb from the atmosphere?", ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"], "Carbon Dioxide"),
+    ("What is the largest mammal?", ["Elephant", "Whale", "Giraffe", "Hippo"], "Whale"),
+    ("Who discovered gravity?", ["Newton", "Einstein", "Galileo", "Edison"], "Newton"),
+    ("What is the boiling point of water?", ["50°C", "75°C", "100°C", "150°C"], "100°C")
+]
 
 # Streamlit UI Setup
-st.set_page_config(page_title="Study Planner & PDF Viewer", layout="wide")
+st.set_page_config(page_title="Study Planner", layout="wide")
 
 # Navigation State
 if "page" not in st.session_state:
     st.session_state.page = "home"
+if "quiz_started" not in st.session_state:
+    st.session_state.quiz_started = False
+if "quiz_answers" not in st.session_state:
+    st.session_state.quiz_answers = {}
 
 # 🏠 **Home Page - User Input**
 if st.session_state.page == "home":
-    st.title("📚 Study Time Allocator & PDF Notes")
+    st.title("📚 Study Time Allocator")
 
     # 📝 User Input Form
     with st.form("user_info"):
@@ -59,71 +68,34 @@ if st.session_state.page == "home":
 
 # 📊 **Dashboard Page**
 elif st.session_state.page == "dashboard":
-    st.title("📊 Study Plan & Learning Resources")
+    st.title("📊 Study Plan")
 
-    col1, col2 = st.columns([1, 2])
+    st.subheader("📌 Study Time Allocation")
+    for subject, time in st.session_state.study_plan.items():
+        st.write(f"✅ {subject}: **{time} hours**")
 
-    # 📌 **Study Time Allocation**
-    with col1:
-        st.subheader("📌 Study Time Allocation")
-        for subject, time in st.session_state.study_plan.items():
-            st.write(f"✅ {subject}: **{time} hours**")
-
-        # 🔙 **Back Button**
-        if st.button("🔙 Go Back"):
-            st.session_state.page = "home"
+    st.subheader("📝 Quiz Section")
+    if not st.session_state.quiz_started:
+        if st.button("🚀 Start Quiz"):
+            st.session_state.quiz_started = True
             st.experimental_rerun()
-
-    # 📄 **PDF Viewer**
-    with col2:
-        st.subheader("📖 Study Material (Scrollable PDF)")
-        pdf_option = st.selectbox("📂 Select a PDF", list(pdf_drive_links.keys()))
-
-        # Generate PDF Viewer Link
-        pdf_viewer_url = get_pdf_viewer_link(pdf_drive_links[pdf_option])
-
-        # Display Embedded PDF (Scrollable)
-        st.markdown(f"""
-            <iframe src="{pdf_viewer_url}" width="100%" height="600px"></iframe>
-        """, unsafe_allow_html=True)
-import streamlit as st
-import pdfplumber
-from PIL import Image
-import requests
-from io import BytesIO
-
-# Function to fetch PDF from Google Drive (works in a web viewer)
-def fetch_pdf_from_drive(file_id):
-    return f"https://drive.google.com/uc?export=download&id={file_id}"
-
-# Function to display PDF pages as images in Streamlit
-def display_pdf(pdf_url):
-    response = requests.get(pdf_url)
-    
-    if response.status_code == 200:
-        with pdfplumber.open(BytesIO(response.content)) as pdf:
-            for page in pdf.pages:
-                img = page.to_image().annotated  # Convert page to an image
-                st.image(img, use_column_width=True)
     else:
-        st.error("Failed to load PDF. Please check the link.")
+        st.write("🧠 Answer the following questions:")
+        correct_answers = 0
 
-# Streamlit App Layout
-st.title("📄 PDF Viewer in Streamlit")
+        # Display Questions
+        for i, (question, options, correct_answer) in enumerate(quiz_questions):
+            user_answer = st.radio(f"**{i+1}. {question}**", options, key=f"q{i}")
+            st.session_state.quiz_answers[i] = user_answer
+            if user_answer == correct_answer:
+                correct_answers += 1
 
-# Google Drive PDF file IDs
-math_pdf_id = "1Os8nxl_EwyadsKhrAgagmjg3sHTH2Ylc"  # Replace with actual Math PDF ID
-computer_pdf_id = "1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp"  # Replace with actual Computer PDF ID
+        # Submit Quiz Button
+        if st.button("📊 Submit Quiz"):
+            st.success(f"🎉 You scored {correct_answers}/10!")
+            st.session_state.quiz_started = False
 
-# Generate direct links
-math_pdf_url = fetch_pdf_from_drive(math_pdf_id)
-computer_pdf_url = fetch_pdf_from_drive(computer_pdf_id)
-
-# Dropdown to select PDF
-pdf_choice = st.selectbox("Select a PDF:", ["Math PDF", "Computer PDF"])
-
-# Display the selected PDF
-if pdf_choice == "Math PDF":
-    display_pdf(math_pdf_url)
-elif pdf_choice == "Computer PDF":
-    display_pdf(computer_pdf_url)
+    # 🔙 **Back Button**
+    if st.button("🔙 Go Back"):
+        st.session_state.page = "home"
+        st.experimental_rerun()
