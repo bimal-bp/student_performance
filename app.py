@@ -1,5 +1,8 @@
 import streamlit as st
 import numpy as np
+import requests
+import pdfplumber
+from io import BytesIO
 
 # Function to allocate study time
 def wsm_allocation(math, eng, sci, comp, total_study_time):
@@ -13,11 +16,27 @@ def wsm_allocation(math, eng, sci, comp, total_study_time):
         "Computer": round(study_times[3], 2)
     }
 
-# Google Drive PDF links
-pdf_links = {
-    "Basics of Computer": "https://drive.google.com/file/d/1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp/preview",
-    "Basics of Math": "https://drive.google.com/file/d/YOUR_MATH_PDF_ID/preview"  # Replace YOUR_MATH_PDF_ID
+# Google Drive File IDs (Extracted from links)
+pdf_drive_links = {
+    "Basics of Computer.pdf": "1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp",  # Computer PDF
+    "10th_Mathematics_English_Medium.pdf": "1Os8nxl_EwyadsKhrAgagmjg3sHTH2Ylc"  # Math PDF
 }
+
+# Fetch PDF from Google Drive
+def fetch_pdf_from_drive(file_id):
+    drive_url = f"https://drive.google.com/uc?id={file_id}"
+    response = requests.get(drive_url)
+    if response.status_code == 200:
+        return BytesIO(response.content)
+    else:
+        st.error("⚠️ Failed to load PDF. Please check the file URL.")
+        return None
+
+# Display PDF using pdfplumber
+def display_pdf(pdf_data):
+    with pdfplumber.open(pdf_data) as pdf:
+        for page in pdf.pages:
+            st.image(page.to_image())
 
 # Streamlit UI
 st.set_page_config(page_title="Study Time Allocator", layout="wide")
@@ -56,7 +75,7 @@ if st.session_state.page == "home":
 elif st.session_state.page == "dashboard":
     st.title("📊 Study Plan Dashboard")
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         st.subheader("📌 Study Time Allocation")
@@ -65,12 +84,17 @@ elif st.session_state.page == "dashboard":
 
     with col2:
         st.subheader("📄 View PDF Notes")
-        pdf_option = st.selectbox("📂 Select a PDF", list(pdf_links.keys()))
-        
-        if pdf_option:
-            st.write(f"**📖 {pdf_option} Preview:**")
-            pdf_url = pdf_links[pdf_option]
-            st.markdown(f'<iframe src="{pdf_url}" width="700" height="600"></iframe>', unsafe_allow_html=True)
+        pdf_option = st.selectbox("📂 Select a PDF", list(pdf_drive_links.keys()))
+        if st.button("📖 Open PDF"):
+            pdf_data = fetch_pdf_from_drive(pdf_drive_links[pdf_option])
+            if pdf_data:
+                st.write(f"**📖 {pdf_option} Preview:**")
+                display_pdf(pdf_data)
+
+    with col3:
+        st.subheader("📝 Quiz Section")
+        if st.button("🚀 Start Quiz"):
+            st.success("🎉 Quiz Started!")
 
     # Add Back Button
     if st.button("🔙 Go Back"):
