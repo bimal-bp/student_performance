@@ -15,7 +15,8 @@ def wsm_allocation(math, eng, sci, comp, total_study_time):
 
 # Google Drive PDF links
 pdf_links = {
-    "Basics of Computer": "https://drive.google.com/file/d/1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp/preview"
+    "Basics of Computer": "https://drive.google.com/file/d/1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp/preview",
+    "Basics of Math": "https://drive.google.com/file/d/YOUR_MATH_PDF_ID/preview"  # Replace YOUR_MATH_PDF_ID
 }
 
 # Streamlit UI
