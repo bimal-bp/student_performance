@@ -1,7 +1,5 @@
 import streamlit as st
 import numpy as np
-import requests
-from io import BytesIO
 
 # Function to allocate study time
 def wsm_allocation(math, eng, sci, comp, total_study_time):
@@ -17,8 +15,8 @@ def wsm_allocation(math, eng, sci, comp, total_study_time):
 
 # ✅ Corrected GitHub raw PDF URLs
 pdf_urls = {
-    "Basics of Computer.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/Basics%20of%20Computer.pdf",
-    "Basic Mathematics.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/basic_maths.pdf"
+    "Basics of Computer.pdf": "https://bimal-bp.github.io/student_performance/Basics%20of%20Computer.pdf",
+    "Basic Mathematics.pdf": "https://bimal-bp.github.io/student_performance/basic_maths.pdf"
 }
 
 # Streamlit UI
@@ -58,4 +56,4 @@ pdf_url = pdf_urls[pdf_option]
 pdf_viewer = f"""
     <iframe src="{pdf_url}" width="700" height="600"></iframe>
 """
-st.components.v1.html(pdf_viewer, height=650)
+st.markdown(pdf_viewer, unsafe_allow_html=True)
