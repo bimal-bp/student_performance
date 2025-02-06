@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import requests
 
 # Function to allocate study time using Weighted Score Method (WSM)
 def wsm_allocation(math, eng, sci, comp, soc, total_study_time):
@@ -29,24 +30,54 @@ pdf_drive_links = {
     "10th_Social Science": "1fqQlgUs6f8V4CMEEkFxM6lDLHi3FePpq"  # Updated Social Science PDF
 }
 
+# Function to get the advanced quiz using GEMI API
+def get_advanced_quiz():
+    # Example endpoint for GEMI API (you need to replace this with the actual GEMI API)
+    api_url = "https://gemi-api-url.com/generate-quiz"
+    response = requests.get(api_url)
+    if response.status_code == 200:
+        return response.json().get('quiz_questions', [])
+    else:
+        return ["Unable to fetch advanced quiz."]
 
 # Streamlit UI Setup
 st.set_page_config(page_title="Study Planner & PDF Viewer", layout="wide")
 
 # Navigation State
 if "page" not in st.session_state:
-    st.session_state.page = "home"
+    st.session_state.page = "login"
+
+# 🏠 **Login Page**
+if st.session_state.page == "login":
+    st.title("📚 Study Time Allocator & PDF Notes - Login")
+
+    # 📝 Login Form
+    with st.form("login_form"):
+        password = st.text_input("🔑 Password", type="password")
+        class_selection = st.selectbox("📚 Select Class", ["10th", "9th"])
+        name = st.text_input("👤 Name")
+        mobile_number = st.text_input("📱 Mobile Number")
+        gmail = st.text_input("📧 Gmail")
+        
+        submitted = st.form_submit_button("🚪 Login")
+
+    # Check for password
+    if submitted and password == "student123":
+        st.session_state.page = "home"
+        st.experimental_rerun()
+    elif submitted:
+        st.error("❌ Incorrect Password!")
 
 # 🏠 **Home Page - User Input**
-if st.session_state.page == "home":
+elif st.session_state.page == "home":
     st.title("📚 Study Time Allocator & PDF Notes")
 
     # 📝 User Input Form
     with st.form("user_info"):
+        student_class = st.selectbox("🏫 Class", ["9th", "10th"])
         name = st.text_input("👤 Name")
         age = st.number_input("📅 Age", min_value=5, max_value=100, step=1)
         gender = st.selectbox("🚻 Gender", ["Male", "Female", "Other"])
-        student_class = st.text_input("🏫 Class")
 
         st.subheader("🎯 Enter Your Subject Scores (%)")
         math = st.slider("🧮 Math", 0, 100, 50)
@@ -93,23 +124,35 @@ elif st.session_state.page == "dashboard":
         st.markdown(f"""
             <iframe src="{pdf_viewer_url}" width="100%" height="600px"></iframe>
         """, unsafe_allow_html=True)
-    
+
     # 📚 **Quiz Section**
-    st.subheader("📝 Quick Quiz")
-    
+    if st.button("📝 Start Quiz"):
+        st.session_state.page = "quiz"
+        st.experimental_rerun()
+
+# 📝 **Quiz Page (3rd Page)**
+elif st.session_state.page == "quiz":
+    st.title("📝 Quiz Section")
+
     quiz_questions = {
         "What is the capital of France?": ["Paris", "London", "Berlin", "Madrid"],
         "What is 5 + 3?": ["6", "7", "8", "9"],
         "Which planet is known as the Red Planet?": ["Earth", "Mars", "Jupiter", "Venus"]
     }
-    
+
     answers = {"What is the capital of France?": "Paris", "What is 5 + 3?": "8", "Which planet is known as the Red Planet?": "Mars"}
-    
+
     score = 0
     for question, options in quiz_questions.items():
         user_answer = st.radio(question, options, index=None)
         if user_answer is not None and user_answer == answers[question]:
             score += 1
-    
+
     if st.button("Submit Quiz"):
         st.success(f"🎉 Your Score: {score}/{len(quiz_questions)}")
+    
+    # 📚 **Advanced Quiz Button**
+    if st.button("💡 Generate Advanced Quiz"):
+        advanced_quiz = get_advanced_quiz()
+        for question in advanced_quiz:
+            st.write(question)
