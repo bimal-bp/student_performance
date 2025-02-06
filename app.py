@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import random
+import base64
 
 # Function to allocate study time using Weighted Score Method (WSM)
 def wsm_allocation(math, eng, sci, comp, total_study_time):
@@ -40,6 +41,13 @@ if "quiz_started" not in st.session_state:
 if "quiz_answers" not in st.session_state:
     st.session_state.quiz_answers = {}
 
+# Function to Create a Downloadable PDF Link
+def create_download_link(pdf_file_path, link_text="📥 Download Sample PDF"):
+    with open(pdf_file_path, "rb") as f:
+        base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+    pdf_link = f'<a href="data:application/pdf;base64,{base64_pdf}" download="sample.pdf">{link_text}</a>'
+    return pdf_link
+
 # 🏠 **Home Page - User Input**
 if st.session_state.page == "home":
     st.title("📚 Study Time Allocator")
@@ -74,6 +82,18 @@ elif st.session_state.page == "dashboard":
     for subject, time in st.session_state.study_plan.items():
         st.write(f"✅ {subject}: **{time} hours**")
 
+    # 📄 **PDF Viewer**
+    st.subheader("📄 Upload & View PDF")
+    pdf_file = st.file_uploader("Upload a PDF", type=["pdf"])
+    
+    if pdf_file:
+        st.write(f"📂 **Uploaded File:** {pdf_file.name}")
+        st.download_button(label="📥 Download Uploaded PDF", data=pdf_file, file_name=pdf_file.name)
+
+    # 🔗 **Downloadable PDF Link**
+    st.markdown(create_download_link("sample.pdf"), unsafe_allow_html=True)
+
+    # 📝 **Quiz Section**
     st.subheader("📝 Quiz Section")
     if not st.session_state.quiz_started:
         if st.button("🚀 Start Quiz"):
