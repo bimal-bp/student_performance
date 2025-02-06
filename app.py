@@ -22,11 +22,11 @@ def get_pdf_viewer_link(file_id):
 
 # Google Drive PDF file IDs
 pdf_drive_links = {
-    "Computer ": "1Bbs8U2Vh2c9N9gQkNyoH9ezj2KMh3Bk4",  # Updated Computer PDF
-    "Mathematics ": "1KhT3-9RgG8LPLc8BkL5TGnmYRoe8eKrG",  # Updated Math PDF
-    "Science ": "1Z5Lh-v0lzHZ6tc-SZFZGJQsbykeCW57P",  # Updated Science PDF
-    "English ": "1X2Y3Z4A5B6C7D8E9F0G1H2I3J4K5L6M7N",  # Updated English PDF
-    "Social Science": "1Q2W3E4R5T6Y7U8I9O0P1A2S3D4F5G6H7J8K"  # Updated Social Science PDF
+    "10th_Computer ": "1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp",  # Updated Computer PDF
+    "10th_Mathematics ": "1g83nbaDLFtUYBW46uWqZSxF6kKGCnoEk",  # Updated Math PDF
+    "10th_Science ": "1Z5Lh-v0lzHZ6tc-SZFZGJQsbykeCW57P",  # Updated Science PDF
+    "10th_English ": "1qYkk7srJSnfzSQahhdcSGFbZ48uptr_d",  # Updated English PDF
+    "10th_Social Science": "1fqQlgUs6f8V4CMEEkFxM6lDLHi3FePpq"  # Updated Social Science PDF
 }
 
 
