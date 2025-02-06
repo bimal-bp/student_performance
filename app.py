@@ -18,7 +18,8 @@ def wsm_allocation(math, eng, sci, comp, total_study_time):
 # GitHub raw PDF URLs
 pdf_urls = {
     "Basics of Computer.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/Basics%20of%20Computer.pdf",
-    "10th_Mathematics_English_Medium.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/10th_Mathametics%20English%20Medium_Text_www.tntextbooks.in.pdf"
+    "10th_Mathematics_English_Medium.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/basic_maths.pdf
+"
 }
 
 # Function to embed PDF in an iframe
