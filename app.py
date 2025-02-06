@@ -29,6 +29,7 @@ pdf_drive_links = {
     "Social Science": "1Q2W3E4R5T6Y7U8I9O0P1A2S3D4F5G6H7J8K"  # Updated Social Science PDF
 }
 
+
 # Streamlit UI Setup
 st.set_page_config(page_title="Study Planner & PDF Viewer", layout="wide")
 
