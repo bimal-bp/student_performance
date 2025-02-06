@@ -3,10 +3,14 @@ import numpy as np
 import requests
 from io import BytesIO
 
-# Function to allocate study time
+# Function to allocate study time based on scores
 def wsm_allocation(math, eng, sci, comp, total_study_time):
     total_score = math + eng + sci + comp
-    weights = [(100 - math) / total_score, (100 - eng) / total_score, (100 - sci) / total_score, (100 - comp) / total_score]
+    if total_score == 400:  # Avoid division by zero when all scores are 100%
+        weights = [0.25, 0.25, 0.25, 0.25]
+    else:
+        weights = [(100 - s) / (400 - total_score) for s in [math, eng, sci, comp]]
+    
     study_times = np.array(weights) * total_study_time
     return {
         "Math": round(study_times[0], 2),
@@ -18,7 +22,7 @@ def wsm_allocation(math, eng, sci, comp, total_study_time):
 # GitHub raw PDF URLs
 pdf_urls = {
     "Basics of Computer.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/Basics%20of%20Computer.pdf",
-    "10th_Mathematics_English_Medium.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/10th_Mathametics%20English%20Medium_Text_www.tntextbooks.in.pdf"
+    "10th Mathematics English Medium.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/10th_Mathametics%20English_Medium_Text_www.tntextbooks.in.pdf"
 }
 
 # Fetch PDF from GitHub
@@ -31,9 +35,9 @@ def fetch_pdf(url):
         return None
 
 # Streamlit UI
-st.set_page_config(page_title="Study Time Allocator", layout="wide")
+st.set_page_config(page_title="📚 Study Time Allocator", layout="wide")
 
-# Navigation State
+# Session State for Navigation
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
@@ -61,7 +65,7 @@ if st.session_state.page == "home":
     if submitted:
         st.session_state.page = "dashboard"
         st.session_state.study_plan = wsm_allocation(math, eng, sci, comp, study_time)
-        st.experimental_rerun()
+        st.rerun()
 
 # Dashboard Page
 elif st.session_state.page == "dashboard":
@@ -69,16 +73,24 @@ elif st.session_state.page == "dashboard":
 
     col1, col2, col3 = st.columns(3)
 
+    # Study Time Allocation
     with col1:
         st.subheader("📌 Study Time Allocation")
         for subject, time in st.session_state.study_plan.items():
             st.write(f"✅ {subject}: **{time} hours**")
 
+    # PDF Notes Section
     with col2:
         st.subheader("📄 View PDF Notes")
         pdf_option = st.selectbox("📂 Select a PDF", list(pdf_urls.keys()))
+        
         if st.button("📖 Open PDF"):
-            pdf_data = fetch_pdf(pdf_urls[pdf_option])
+            pdf_url = pdf_urls[pdf_option]
+            st.write(f"**📖 {pdf_option} Preview:**")
+            st.components.v1.iframe(pdf_url, height=600)
+
+            # Download Button
+            pdf_data = fetch_pdf(pdf_url)
             if pdf_data:
                 st.download_button(
                     label="⬇️ Download PDF",
@@ -86,15 +98,14 @@ elif st.session_state.page == "dashboard":
                     file_name=pdf_option,
                     mime="application/pdf"
                 )
-                st.write(f"**📖 {pdf_option} Preview:**")
-                st.pdf(pdf_data)
 
+    # Quiz Section
     with col3:
         st.subheader("📝 Quiz Section")
         if st.button("🚀 Start Quiz"):
             st.success("🎉 Quiz Started!")
 
-    # Add Back Button
+    # Back Button
     if st.button("🔙 Go Back"):
         st.session_state.page = "home"
-        st.experimental_rerun()
+        st.rerun()
