@@ -2,13 +2,9 @@ import streamlit as st
 import numpy as np
 
 def wsm_allocation(math, eng, sci, comp, total_study_time):
-    # Define weights (higher weight for subjects with lower scores)
     total_score = math + eng + sci + comp
     weights = [(100 - math) / total_score, (100 - eng) / total_score, (100 - sci) / total_score, (100 - comp) / total_score]
-    
-    # Allocate study time based on weights
     study_times = np.array(weights) * total_study_time
-    
     return {
         "Math": round(study_times[0], 2),
         "English": round(study_times[1], 2),
@@ -17,7 +13,7 @@ def wsm_allocation(math, eng, sci, comp, total_study_time):
     }
 
 # Streamlit UI
-st.title("Study Time Allocator")
+st.title("Dashboard - Study Time Allocator")
 
 # User Input Form
 with st.form("user_info"):
@@ -34,10 +30,25 @@ with st.form("user_info"):
     study_time = st.number_input("Daily Study Time (hours)", min_value=1.0, max_value=10.0, step=0.5)
     
     submitted = st.form_submit_button("Calculate Study Plan")
-    
+
 if submitted:
     study_plan = wsm_allocation(math, eng, sci, comp, study_time)
     
-    st.subheader(f"Study Time Allocation for {name}")
-    for subject, time in study_plan.items():
-        st.write(f"{subject}: {time} hours")
+    st.subheader("Study Plan")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.subheader("Study Time Allocation")
+        for subject, time in study_plan.items():
+            st.write(f"{subject}: {time} hours")
+    
+    with col2:
+        st.subheader("View PDF")
+        pdf_option = st.selectbox("Select a PDF", ["Basics of Computer.pdf", "10th_Mathematics_English_Medium.pdf"])
+        if st.button("Open PDF"):
+            st.write(f"Opening: {pdf_option}")
+    
+    with col3:
+        st.subheader("Quiz Section")
+        if st.button("Start Quiz"):
+            st.write("Quiz Started!")
