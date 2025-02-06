@@ -17,18 +17,14 @@ def wsm_allocation(math, eng, sci, comp, total_study_time):
 
 # GitHub raw PDF URLs
 pdf_urls = {
-    "Basics of Computer.pdf": "https://bimal-bp.github.io/student_performance/Basics%20of%20Computer.pdf",
-    "10th_Mathematics_English_Medium.pdf": "https://bimal-bp.github.io/student_performance/10th_Mathametics%20English%20Medium_Text_www.tntextbooks.in.pdf"
+    "Basics of Computer.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/Basics%20of%20Computer.pdf",
+    "10th_Mathematics_English_Medium.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/10th_Mathametics%20English%20Medium_Text_www.tntextbooks.in.pdf"
 }
 
-# Fetch PDF from GitHub
-def fetch_pdf(url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        return BytesIO(response.content)
-    else:
-        st.error("⚠️ Failed to load PDF. Please check the file URL.")
-        return None
+# Function to embed PDF in an iframe
+def display_pdf(url):
+    pdf_display = f'<iframe src="https://docs.google.com/gview?url={url}&embedded=true" width="700" height="500"></iframe>'
+    st.markdown(pdf_display, unsafe_allow_html=True)
 
 # Streamlit UI
 st.set_page_config(page_title="Study Time Allocator", layout="wide")
@@ -78,8 +74,7 @@ elif st.session_state.page == "dashboard":
         st.subheader("📄 View PDF Notes")
         pdf_option = st.selectbox("📂 Select a PDF", list(pdf_urls.keys()))
         if st.button("📖 Open PDF"):
-            pdf_url = pdf_urls[pdf_option]
-            st.components.v1.iframe(pdf_url, width=700, height=500)
+            display_pdf(pdf_urls[pdf_option])
 
     with col3:
         st.subheader("📝 Quiz Section")
