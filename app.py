@@ -15,17 +15,24 @@ def wsm_allocation(math, eng, sci, comp, total_study_time):
         "Computer": round(study_times[3], 2)
     }
 
-# GitHub raw PDF URLs
+# ✅ Corrected GitHub raw PDF URLs
 pdf_urls = {
     "Basics of Computer.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/Basics%20of%20Computer.pdf",
-    "10th_Mathematics_English_Medium.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/basic_maths.pdf
-"
+    "Basic Mathematics.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/basic_maths.pdf"
 }
 
-# Function to embed PDF in an iframe
-def display_pdf(url):
-    pdf_display = f'<iframe src="https://docs.google.com/gview?url={url}&embedded=true" width="700" height="500"></iframe>'
-    st.markdown(pdf_display, unsafe_allow_html=True)
+# Function to fetch and load PDFs
+def fetch_pdf(url):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return BytesIO(response.content)
+        else:
+            st.error("⚠️ Failed to load PDF. Please check the file URL.")
+            return None
+    except Exception as e:
+        st.error(f"⚠️ Error loading PDF: {e}")
+        return None
 
 # Streamlit UI
 st.set_page_config(page_title="Study Time Allocator", layout="wide")
@@ -75,7 +82,16 @@ elif st.session_state.page == "dashboard":
         st.subheader("📄 View PDF Notes")
         pdf_option = st.selectbox("📂 Select a PDF", list(pdf_urls.keys()))
         if st.button("📖 Open PDF"):
-            display_pdf(pdf_urls[pdf_option])
+            pdf_data = fetch_pdf(pdf_urls[pdf_option])
+            if pdf_data:
+                st.write(f"**📖 Preview: {pdf_option}**")
+                st.download_button(
+                    label="⬇️ Download PDF",
+                    data=pdf_data,
+                    file_name=pdf_option,
+                    mime="application/pdf"
+                )
+                st.pdf(pdf_data)  # ✅ This will display the PDF in Streamlit
 
     with col3:
         st.subheader("📝 Quiz Section")
