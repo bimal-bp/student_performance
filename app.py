@@ -53,9 +53,8 @@ if st.session_state.page == "login":
 
     # 📝 Login Form
     with st.form("login_form"):
-        password = st.text_input("🔑 Password", type="password")
-        class_selection = st.selectbox("📚 Select Class", ["10th", "9th"])
         name = st.text_input("👤 Name")
+        password = st.text_input("🔑 Password", type="password")
         mobile_number = st.text_input("📱 Mobile Number")
         gmail = st.text_input("📧 Gmail")
         
@@ -74,8 +73,7 @@ elif st.session_state.page == "home":
 
     # 📝 User Input Form
     with st.form("user_info"):
-        student_class = st.selectbox("🏫 Class", ["9th", "10th"])
-        name = st.text_input("👤 Name")
+        class_selection = st.selectbox("📚 Select Class", ["10th", "9th"])
         age = st.number_input("📅 Age", min_value=5, max_value=100, step=1)
         gender = st.selectbox("🚻 Gender", ["Male", "Female", "Other"])
 
