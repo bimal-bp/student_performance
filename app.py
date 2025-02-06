@@ -21,84 +21,41 @@ pdf_urls = {
     "Basic Mathematics.pdf": "https://raw.githubusercontent.com/bimal-bp/student_performance/main/basic_maths.pdf"
 }
 
-# Function to fetch and load PDFs
-def fetch_pdf(url):
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            return BytesIO(response.content)
-        else:
-            st.error("⚠️ Failed to load PDF. Please check the file URL.")
-            return None
-    except Exception as e:
-        st.error(f"⚠️ Error loading PDF: {e}")
-        return None
-
 # Streamlit UI
 st.set_page_config(page_title="Study Time Allocator", layout="wide")
 
-# Navigation State
-if "page" not in st.session_state:
-    st.session_state.page = "home"
+st.title("📚 Study Time Allocator Dashboard")
 
-# Home Page - User Input
-if st.session_state.page == "home":
-    st.title("📚 Study Time Allocator Dashboard")
+# Subject Score Inputs
+with st.form("user_info"):
+    name = st.text_input("👤 Name")
+    age = st.number_input("📅 Age", min_value=5, max_value=100, step=1)
+    gender = st.selectbox("🚻 Gender", ["Male", "Female", "Other"])
+    student_class = st.text_input("🏫 Class")
 
-    # User Input Form
-    with st.form("user_info"):
-        name = st.text_input("👤 Name")
-        age = st.number_input("📅 Age", min_value=5, max_value=100, step=1)
-        gender = st.selectbox("🚻 Gender", ["Male", "Female", "Other"])
-        student_class = st.text_input("🏫 Class")
+    st.subheader("🎯 Enter Your Subject Scores (%)")
+    math = st.slider("🧮 Math", 0, 100, 50)
+    eng = st.slider("📖 English", 0, 100, 50)
+    sci = st.slider("🔬 Science", 0, 100, 50)
+    comp = st.slider("💻 Computer", 0, 100, 50)
+    study_time = st.number_input("⏳ Daily Study Time (hours)", min_value=1.0, max_value=10.0, step=0.5)
 
-        st.subheader("🎯 Enter Your Subject Scores (%)")
-        math = st.slider("🧮 Math", 0, 100, 50)
-        eng = st.slider("📖 English", 0, 100, 50)
-        sci = st.slider("🔬 Science", 0, 100, 50)
-        comp = st.slider("💻 Computer", 0, 100, 50)
-        study_time = st.number_input("⏳ Daily Study Time (hours)", min_value=1.0, max_value=10.0, step=0.5)
+    submitted = st.form_submit_button("📊 Generate Study Plan")
 
-        submitted = st.form_submit_button("📊 Generate Study Plan")
+if submitted:
+    study_plan = wsm_allocation(math, eng, sci, comp, study_time)
 
-    # Navigate to Dashboard Page
-    if submitted:
-        st.session_state.page = "dashboard"
-        st.session_state.study_plan = wsm_allocation(math, eng, sci, comp, study_time)
-        st.experimental_rerun()
+    st.subheader("📌 Study Time Allocation")
+    for subject, time in study_plan.items():
+        st.write(f"✅ {subject}: **{time} hours**")
 
-# Dashboard Page
-elif st.session_state.page == "dashboard":
-    st.title("📊 Study Plan Dashboard")
+# 📖 **PDF Viewer**
+st.subheader("📄 Read PDF Notes")
+pdf_option = st.selectbox("📂 Select a PDF", list(pdf_urls.keys()))
 
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.subheader("📌 Study Time Allocation")
-        for subject, time in st.session_state.study_plan.items():
-            st.write(f"✅ {subject}: **{time} hours**")
-
-    with col2:
-        st.subheader("📄 View PDF Notes")
-        pdf_option = st.selectbox("📂 Select a PDF", list(pdf_urls.keys()))
-        if st.button("📖 Open PDF"):
-            pdf_data = fetch_pdf(pdf_urls[pdf_option])
-            if pdf_data:
-                st.write(f"**📖 Preview: {pdf_option}**")
-                st.download_button(
-                    label="⬇️ Download PDF",
-                    data=pdf_data,
-                    file_name=pdf_option,
-                    mime="application/pdf"
-                )
-                st.pdf(pdf_data)  # ✅ This will display the PDF in Streamlit
-
-    with col3:
-        st.subheader("📝 Quiz Section")
-        if st.button("🚀 Start Quiz"):
-            st.success("🎉 Quiz Started!")
-
-    # Add Back Button
-    if st.button("🔙 Go Back"):
-        st.session_state.page = "home"
-        st.experimental_rerun()
+# ✅ **Embed the PDF in Streamlit**
+pdf_url = pdf_urls[pdf_option]
+pdf_viewer = f"""
+    <iframe src="{pdf_url}" width="700" height="600"></iframe>
+"""
+st.components.v1.html(pdf_viewer, height=650)
