@@ -120,18 +120,34 @@ elif page == "Dashboard":
         st.warning("⚠️ No student data found. Please register first.")
 
 
-# Google Drive PDF Links
+# Function to generate an embeddable Google Drive link
+def get_pdf_viewer_link(file_id):
+    return f"https://drive.google.com/file/d/{file_id}/preview"
+
+# Google Drive PDF file IDs
 pdf_drive_links = {
-    "10th_Computer": "https://drive.google.com/file/d/1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp/view",
-    "10th_Mathematics": "https://drive.google.com/file/d/1g83nbaDLFtUYBW46uWqZSxF6kKGCnoEk/view",
-    "10th_Science": "https://drive.google.com/file/d/1Z5Lh-v0lzHZ6tc-SZFZGJQsbykeCW57P/view",
-    "10th_English": "https://drive.google.com/file/d/1qYkk7srJSnfzSQahhdcSGFbZ48uptr_d/view",
-    "10th_Social Science": "https://drive.google.com/file/d/1fqQlgUs6f8V4CMEEkFxM6lDLHi3FePpq/view"
+    "10th_Computer": "1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp",
+    "10th_Mathematics": "1g83nbaDLFtUYBW46uWqZSxF6kKGCnoEk",
+    "10th_Science": "1Z5Lh-v0lzHZ6tc-SZFZGJQsbykeCW57P",
+    "10th_English": "1qYkk7srJSnfzSQahhdcSGFbZ48uptr_d",
+    "10th_Social Science": "1fqQlgUs6f8V4CMEEkFxM6lDLHi3FePpq"
 }
 
-# Sidebar for PDF Links
+# Sidebar for PDF Selection
 st.sidebar.title("📂 Study Materials")
-st.sidebar.write("Click on a subject to read its PDF:")
+st.sidebar.write("Click a button to open a PDF:")
 
-for subject, link in pdf_drive_links.items():
-    st.sidebar.markdown(f"[📖 {subject}]({link})", unsafe_allow_html=True)
+selected_pdf = None
+for subject, file_id in pdf_drive_links.items():
+    if st.sidebar.button(f"📖 {subject}"):
+        selected_pdf = get_pdf_viewer_link(file_id)
+
+# Main Page: Display PDF Viewer if a PDF is selected
+st.title("📄 PDF Viewer")
+if selected_pdf:
+    st.markdown(f"""
+        <iframe src="{selected_pdf}" width="100%" height="600px"></iframe>
+    """, unsafe_allow_html=True)
+else:
+    st.write("📌 Select a PDF from the sidebar to view it here.")
+
