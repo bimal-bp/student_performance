@@ -118,3 +118,20 @@ elif page == "Dashboard":
         st.success("📢 Keep up the good work!")
     else:
         st.warning("⚠️ No student data found. Please register first.")
+
+
+# Google Drive PDF Links
+pdf_drive_links = {
+    "10th_Computer": "https://drive.google.com/file/d/1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp/view",
+    "10th_Mathematics": "https://drive.google.com/file/d/1g83nbaDLFtUYBW46uWqZSxF6kKGCnoEk/view",
+    "10th_Science": "https://drive.google.com/file/d/1Z5Lh-v0lzHZ6tc-SZFZGJQsbykeCW57P/view",
+    "10th_English": "https://drive.google.com/file/d/1qYkk7srJSnfzSQahhdcSGFbZ48uptr_d/view",
+    "10th_Social Science": "https://drive.google.com/file/d/1fqQlgUs6f8V4CMEEkFxM6lDLHi3FePpq/view"
+}
+
+# Sidebar for PDF Links
+st.sidebar.title("📂 Study Materials")
+st.sidebar.write("Click on a subject to read its PDF:")
+
+for subject, link in pdf_drive_links.items():
+    st.sidebar.markdown(f"[📖 {subject}]({link})", unsafe_allow_html=True)
