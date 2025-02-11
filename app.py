@@ -58,6 +58,10 @@ if st.session_state["quiz_started"]:
         for i, (question, opt_a, opt_b, opt_c, opt_d, correct) in enumerate(questions):
             st.write(f"**Q{i+1}: {question}**")
             
+            # Ensure default value in session state
+            if i not in st.session_state["user_answers"]:
+                st.session_state["user_answers"][i] = None
+
             # Set unique key for each question
             selected_option = st.radio(
                 f"Select an answer for Q{i+1}:",
@@ -65,14 +69,16 @@ if st.session_state["quiz_started"]:
                 key=f"q{i}"
             )
 
-            # Store user answer in session state
-            st.session_state["user_answers"][i] = selected_option
+            # Store user answer safely
+            if selected_option:
+                st.session_state["user_answers"][i] = selected_option
 
         # Submit button
         if st.button("✅ Submit Answers"):
+            # Ensure session state keys exist before scoring
             st.session_state["score"] = sum(
                 1 for i, (_, _, _, _, _, correct) in enumerate(questions)
-                if st.session_state["user_answers"].get(i) == correct
+                if i in st.session_state["user_answers"] and st.session_state["user_answers"][i] == correct
             )
 
             st.success(f"🎯 Your Score: **{st.session_state['score']}/{len(questions)}**")
