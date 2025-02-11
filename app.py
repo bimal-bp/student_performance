@@ -49,26 +49,37 @@ if not st.session_state["quiz_started"]:
 if st.session_state["quiz_started"]:
     questions = fetch_quiz_questions()
     if questions:
-        for i, (question, opt_a, opt_b, opt_c, opt_d, correct) in enumerate(questions):
-            st.write(f"**Q{i+1}: {question}**")
-            # Use a unique key for each radio button
-            selected_option = st.radio(
-                "Select an answer:",
-                [opt_a, opt_b, opt_c, opt_d],
-                key=f"q{i}"
-            )
-            # Store the user's answer in session state
-            if i >= len(st.session_state["user_answers"]):
-                st.session_state["user_answers"].append(selected_option)
+        # Debug: Print the structure of questions
+        st.write("Debug: Questions fetched from the database:")
+        st.write(questions)
+
+        for i, question_data in enumerate(questions):
+            # Unpack the question data safely
+            if len(question_data) == 6:  # Ensure there are exactly 6 elements
+                question, opt_a, opt_b, opt_c, opt_d, correct = question_data
+                st.write(f"**Q{i+1}: {question}**")
+                # Use a unique key for each radio button
+                selected_option = st.radio(
+                    "Select an answer:",
+                    [opt_a, opt_b, opt_c, opt_d],
+                    key=f"q{i}"
+                )
+                # Store the user's answer in session state
+                if i >= len(st.session_state["user_answers"]):
+                    st.session_state["user_answers"].append(selected_option)
+                else:
+                    st.session_state["user_answers"][i] = selected_option
             else:
-                st.session_state["user_answers"][i] = selected_option
+                st.error(f"❌ Invalid question format: {question_data}")
 
         # Submit button to calculate the score
         if st.button("Submit Answers"):
             st.session_state["score"] = 0
-            for i, (_, _, _, _, correct) in enumerate(questions):
-                if st.session_state["user_answers"][i] == correct:
-                    st.session_state["score"] += 1
+            for i, question_data in enumerate(questions):
+                if len(question_data) == 6:  # Ensure there are exactly 6 elements
+                    _, _, _, _, correct = question_data
+                    if st.session_state["user_answers"][i] == correct:
+                        st.session_state["score"] += 1
             st.success(f"✅ Your Score: {st.session_state['score']}/{len(questions)}")
             st.session_state["quiz_started"] = False  # End the quiz
     else:
