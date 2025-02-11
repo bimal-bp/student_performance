@@ -1,93 +1,123 @@
 import streamlit as st
-import psycopg2
-import hashlib
+import numpy as np
+import requests
 
-# Database connection URL
-DB_URL = "postgresql://neondb_owner:npg_hnkGvx5eFaf0@ep-crimson-bread-a136p4y6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+# Function to allocate study time using Weighted Score Method (WSM)
+def wsm_allocation(math, eng, sci, comp, soc, total_study_time):
+    total_score = math + eng + sci + comp + soc
+    weights = [(100 - math) / total_score, (100 - eng) / total_score, 
+               (100 - sci) / total_score, (100 - comp) / total_score,
+               (100 - soc) / total_score]
+    study_times = np.array(weights) * total_study_time
+    return {
+        "Math": round(study_times[0], 2),
+        "English": round(study_times[1], 2),
+        "Science": round(study_times[2], 2),
+        "Computer": round(study_times[3], 2),
+        "Social Science": round(study_times[4], 2)
+    }
 
-# Function to connect to the database
-def get_db_connection():
-    return psycopg2.connect(DB_URL)
+# Function to generate an embeddable Google Drive link
+def get_pdf_viewer_link(file_id):
+    return f"https://drive.google.com/file/d/{file_id}/preview"
 
-# Function to hash passwords securely
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+# Google Drive PDF file IDs
+pdf_drive_links = {
+    "10th_Computer": "1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp",
+    "10th_Mathematics": "1g83nbaDLFtUYBW46uWqZSxF6kKGCnoEk",
+    "10th_Science": "1Z5Lh-v0lzHZ6tc-SZFZGJQsbykeCW57P",
+    "10th_English": "1qYkk7srJSnfzSQahhdcSGFbZ48uptr_d",
+    "10th_Social Science": "1fqQlgUs6f8V4CMEEkFxM6lDLHi3FePpq"
+}
 
-st.title("📚 Student Registration Page")
-
-# Streamlit Form for User Registration
-with st.form("registration_form"):
-    name = st.text_input("👤 Name", max_chars=100)
-    password = st.text_input("🔑 Password", type="password", max_chars=255)
-    mobile_number = st.text_input("📱 Mobile Number", max_chars=20)
-    email = st.text_input("📧 Email", max_chars=100)
-
-    class_name = st.text_input("🏫 Class", max_chars=10)
-    age = st.number_input("🎂 Age", min_value=1, max_value=100, step=1)
-    gender = st.selectbox("⚧️ Gender", ["Male", "Female", "Other"])
-    
-    math = st.number_input("📐 Math Score", min_value=0, max_value=100, step=1)
-    english = st.number_input("📖 English Score", min_value=0, max_value=100, step=1)
-    science = st.number_input("🔬 Science Score", min_value=0, max_value=100, step=1)
-    computer = st.number_input("💻 Computer Score", min_value=0, max_value=100, step=1)
-    social_science = st.number_input("🌍 Social Science Score", min_value=0, max_value=100, step=1)
-    
-    study_time = st.number_input("⏳ Study Time (hours per day)", min_value=0.0, max_value=24.0, step=0.1)
-
-    submitted = st.form_submit_button("🚀 Register")
-
-if submitted:
-    # Validate inputs
-    if not name or not password or not mobile_number or not email:
-        st.error("⚠️ Please fill in all required fields (Name, Password, Mobile Number, Email).")
+# Function to get quiz questions
+def get_advanced_quiz():
+    api_url = "https://gemi-api-url.com/generate-quiz"
+    response = requests.get(api_url)
+    if response.status_code == 200:
+        return response.json().get('quiz_questions', [])
     else:
-        try:
-            conn = get_db_connection()
-            cur = conn.cursor()
+        return ["Unable to fetch advanced quiz."]
 
-            # Hash the password before storing
-            hashed_password = hash_password(password)
+# Streamlit UI Setup
+st.set_page_config(page_title="Study Planner & PDF Viewer", layout="wide")
 
-            # Ensure the table exists
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS students (
-                    id SERIAL PRIMARY KEY,
-                    name VARCHAR(100) NOT NULL,
-                    password VARCHAR(255) NOT NULL,
-                    mobile_number VARCHAR(20) NOT NULL,
-                    email VARCHAR(100) UNIQUE NOT NULL,
-                    class VARCHAR(10),
-                    age INT,
-                    gender VARCHAR(10),
-                    math INT,
-                    english INT,
-                    science INT,
-                    computer INT,
-                    social_science INT,
-                    study_time FLOAT
-                );
-            """)
-            conn.commit()
+# Navigation State
+if "page" not in st.session_state:
+    st.session_state.page = "login"
 
-            # Check if the email already exists
-            cur.execute("SELECT * FROM students WHERE email = %s", (email,))
-            existing_user = cur.fetchone()
+# 🏠 Login Page
+if st.session_state.page == "login":
+    st.title("📚 Study Time Allocator & PDF Notes - Login")
+    with st.form("login_form"):
+        name = st.text_input("👤 Name")
+        password = st.text_input("🔑 Password", type="password")
+        submitted = st.form_submit_button("🚪 Login")
+    
+    if submitted and password == "student123":
+        st.session_state.page = "dashboard"
+        st.experimental_rerun()
+    elif submitted:
+        st.error("❌ Incorrect Password!")
 
-            if existing_user:
-                st.warning("⚠️ Email already registered! Try logging in.")
-            else:
-                # Insert new student data
-                cur.execute("""
-                    INSERT INTO students 
-                    (name, password, mobile_number, email, class, age, gender, math, english, science, computer, social_science, study_time) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """, (name, hashed_password, mobile_number, email, class_name, age, gender, math, english, science, computer, social_science, study_time))
+# 📊 Dashboard Page
+elif st.session_state.page == "dashboard":
+    st.title("📊 Study Plan & Learning Resources")
+    with st.form("user_info"):
+        st.subheader("🎯 Enter Your Subject Scores (%)")
+        math = st.slider("🧮 Math", 0, 100, 50)
+        eng = st.slider("📖 English", 0, 100, 50)
+        sci = st.slider("🔬 Science", 0, 100, 50)
+        comp = st.slider("💻 Computer", 0, 100, 50)
+        soc = st.slider("🌍 Social Science", 0, 100, 50)
+        study_time = st.number_input("⏳ Daily Study Time (hours)", min_value=1.0, max_value=10.0, step=0.5)
+        submitted = st.form_submit_button("📊 Generate Study Plan")
+    
+    if submitted:
+        st.session_state.study_plan = wsm_allocation(math, eng, sci, comp, soc, study_time)
+        st.experimental_rerun()
+    
+    if "study_plan" in st.session_state:
+        col1, col2 = st.columns([1, 2])
+        with col1:
+            st.subheader("📌 Study Time Allocation")
+            for subject, time in st.session_state.study_plan.items():
+                st.write(f"✅ {subject}: *{time} hours*")
+        
+        with col2:
+            st.subheader("📖 Study Material (Scrollable PDF)")
+            pdf_option = st.selectbox("📂 Select a PDF", list(pdf_drive_links.keys()))
+            pdf_viewer_url = get_pdf_viewer_link(pdf_drive_links[pdf_option])
+            st.markdown(f"<iframe src='{pdf_viewer_url}' width='100%' height='600px'></iframe>", unsafe_allow_html=True)
+    
+    if st.button("📝 Start Quiz"):
+        st.session_state.page = "quiz"
+        st.experimental_rerun()
 
-                conn.commit()
-                st.success("🎉 Registered successfully!")
-
-            # Close the database connection
-            cur.close()
-            conn.close()
-        except Exception as e:
-            st.error(f"❌ Database Error: {e}")
+# 📝 Quiz Page
+elif st.session_state.page == "quiz":
+    st.title("📝 Quiz Section")
+    quiz_questions = {
+        "What is the capital of France?": ["Paris", "London", "Berlin", "Madrid"],
+        "What is 5 + 3?": ["6", "7", "8", "9"],
+        "Which planet is known as the Red Planet?": ["Earth", "Mars", "Jupiter", "Venus"]
+    }
+    answers = {"What is the capital of France?": "Paris", "What is 5 + 3?": "8", "Which planet is known as the Red Planet?": "Mars"}
+    score = 0
+    
+    for question, options in quiz_questions.items():
+        user_answer = st.radio(question, options, index=None)
+        if user_answer is not None and user_answer == answers[question]:
+            score += 1
+    
+    if st.button("Submit Quiz"):
+        st.success(f"🎉 Your Score: {score}/{len(quiz_questions)}")
+    
+    if st.button("💡 Generate Advanced Quiz"):
+        advanced_quiz = get_advanced_quiz()
+        for question in advanced_quiz:
+            st.write(question)
+    
+    if st.button("🔙 Back to Dashboard"):
+        st.session_state.page = "dashboard"
+        st.experimental_rerun()
