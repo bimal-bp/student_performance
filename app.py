@@ -20,30 +20,56 @@ def fetch_quiz_questions():
         st.error(f"❌ Database Error: {e}")
         return []
 
-# Initialize session state if not already initialized
+# Initialize session state for user data and quiz state
 if "user_data" not in st.session_state:
     st.session_state["user_data"] = {"name": "John Doe"}  # Example user data
 
+if "quiz_started" not in st.session_state:
+    st.session_state["quiz_started"] = False
+
+if "user_answers" not in st.session_state:
+    st.session_state["user_answers"] = []
+
+if "score" not in st.session_state:
+    st.session_state["score"] = 0
+
+# Display the dashboard
 user_data = st.session_state["user_data"]
 st.title("📊 Student Dashboard")
 st.subheader(f"Welcome, {user_data['name']}!")
 
-# Button for Quiz Session
-if st.button("📝 Start Quiz Session"):
+# Start the quiz session
+if not st.session_state["quiz_started"]:
+    if st.button("📝 Start Quiz Session"):
+        st.session_state["quiz_started"] = True
+        st.session_state["user_answers"] = []  # Reset answers
+        st.session_state["score"] = 0  # Reset score
+
+# If the quiz is started, display questions
+if st.session_state["quiz_started"]:
     questions = fetch_quiz_questions()
     if questions:
-        score = 0
-        user_answers = []
-        
         for i, (question, opt_a, opt_b, opt_c, opt_d, correct) in enumerate(questions):
             st.write(f"**Q{i+1}: {question}**")
-            selected_option = st.radio("Select an answer:", [opt_a, opt_b, opt_c, opt_d], key=f"q{i}")
-            user_answers.append(selected_option)
-        
+            # Use a unique key for each radio button
+            selected_option = st.radio(
+                "Select an answer:",
+                [opt_a, opt_b, opt_c, opt_d],
+                key=f"q{i}"
+            )
+            # Store the user's answer in session state
+            if i >= len(st.session_state["user_answers"]):
+                st.session_state["user_answers"].append(selected_option)
+            else:
+                st.session_state["user_answers"][i] = selected_option
+
+        # Submit button to calculate the score
         if st.button("Submit Answers"):
+            st.session_state["score"] = 0
             for i, (_, _, _, _, correct) in enumerate(questions):
-                if user_answers[i] == correct:
-                    score += 1
-            st.success(f"✅ Your Score: {score}/{len(questions)}")
+                if st.session_state["user_answers"][i] == correct:
+                    st.session_state["score"] += 1
+            st.success(f"✅ Your Score: {st.session_state['score']}/{len(questions)}")
+            st.session_state["quiz_started"] = False  # End the quiz
     else:
         st.warning("⚠️ No quiz questions available.")
