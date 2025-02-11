@@ -24,6 +24,19 @@ def wsm_allocation(math, eng, sci, comp, soc, total_study_time):
             "Science": round(study_times[2], 2), "Computer": round(study_times[3], 2),
             "Social Science": round(study_times[4], 2)}
 
+# Function to generate an embeddable Google Drive link
+def get_pdf_viewer_link(file_id):
+    return f"https://drive.google.com/file/d/{file_id}/preview"
+
+# Google Drive PDF file IDs
+pdf_drive_links = {
+    "10th_Computer": "1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp",
+    "10th_Mathematics": "1g83nbaDLFtUYBW46uWqZSxF6kKGCnoEk",
+    "10th_Science": "1Z5Lh-v0lzHZ6tc-SZFZGJQsbykeCW57P",
+    "10th_English": "1qYkk7srJSnfzSQahhdcSGFbZ48uptr_d",
+    "10th_Social Science": "1fqQlgUs6f8V4CMEEkFxM6lDLHi3FePpq"
+}
+
 # Streamlit Navigation
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ["Register", "Dashboard"])
@@ -79,14 +92,8 @@ if page == "Register":
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """, (name, hashed_password, mobile_number, email, class_name, age, gender, math, english, science, computer, social_science, study_time))
                     conn.commit()
-
-                    # Store Data for Dashboard
-                    st.session_state["user_data"] = {
-                        "name": name, "math": math, "english": english,
-                        "science": science, "computer": computer, "social_science": social_science, "study_time": study_time
-                    }
+                    st.session_state["user_data"] = {"name": name, "math": math, "english": english, "science": science, "computer": computer, "social_science": social_science, "study_time": study_time}
                     st.success("🎉 Registered successfully! Go to the Dashboard to view study plan.")
-
                 cur.close()
                 conn.close()
             except Exception as e:
@@ -98,56 +105,22 @@ elif page == "Dashboard":
     if "user_data" in st.session_state:
         user_data = st.session_state["user_data"]
         st.subheader(f"Welcome, {user_data['name']}!")
-        
+
         # Study Plan Calculation
         study_plan = wsm_allocation(user_data["math"], user_data["english"], user_data["science"],
                                     user_data["computer"], user_data["social_science"], user_data["study_time"])
         st.subheader("📌 Study Time Allocation")
         for subject, time in study_plan.items():
             st.write(f"✅ {subject}: *{time} hours*")
-        
+
         # Score Summary
         st.subheader("📈 Performance Overview")
-        scores = {
-            "Math": user_data["math"], "English": user_data["english"],
-            "Science": user_data["science"], "Computer": user_data["computer"],
-            "Social Science": user_data["social_science"]
-        }
+        scores = {"Math": user_data["math"], "English": user_data["english"], "Science": user_data["science"], "Computer": user_data["computer"], "Social Science": user_data["social_science"]}
         st.bar_chart(scores)
 
-        st.success("📢 Keep up the good work!")
+        # PDF Viewer
+        st.subheader("📂 Study Materials")
+        for subject, file_id in pdf_drive_links.items():
+            st.markdown(f"<iframe src='{get_pdf_viewer_link(file_id)}' width='100%' height='400px'></iframe>", unsafe_allow_html=True)
     else:
         st.warning("⚠️ No student data found. Please register first.")
-
-
-# Function to generate an embeddable Google Drive link
-def get_pdf_viewer_link(file_id):
-    return f"https://drive.google.com/file/d/{file_id}/preview"
-
-# Google Drive PDF file IDs
-pdf_drive_links = {
-    "10th_Computer": "1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp",
-    "10th_Mathematics": "1g83nbaDLFtUYBW46uWqZSxF6kKGCnoEk",
-    "10th_Science": "1Z5Lh-v0lzHZ6tc-SZFZGJQsbykeCW57P",
-    "10th_English": "1qYkk7srJSnfzSQahhdcSGFbZ48uptr_d",
-    "10th_Social Science": "1fqQlgUs6f8V4CMEEkFxM6lDLHi3FePpq"
-}
-
-# Sidebar for PDF Selection
-st.sidebar.title("📂 Study Materials")
-st.sidebar.write("Click a button to open a PDF:")
-
-selected_pdf = None
-for subject, file_id in pdf_drive_links.items():
-    if st.sidebar.button(f"📖 {subject}"):
-        selected_pdf = get_pdf_viewer_link(file_id)
-
-# Main Page: Display PDF Viewer if a PDF is selected
-st.title("📄 PDF Viewer")
-if selected_pdf:
-    st.markdown(f"""
-        <iframe src="{selected_pdf}" width="100%" height="600px"></iframe>
-    """, unsafe_allow_html=True)
-else:
-    st.write("📌 Select a PDF from the sidebar to view it here.")
-
