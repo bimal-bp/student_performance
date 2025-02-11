@@ -24,42 +24,29 @@ def wsm_allocation(math, eng, sci, comp, soc, total_study_time):
             "Science": round(study_times[2], 2), "Computer": round(study_times[3], 2),
             "Social Science": round(study_times[4], 2)}
 
-# Function to generate an embeddable Google Drive link
-def get_pdf_viewer_link(file_id):
-    return f"https://drive.google.com/file/d/{file_id}/preview"
-
-# Google Drive PDF file IDs
-pdf_drive_links = {
-    "10th_Computer": "1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp",
-    "10th_Mathematics": "1g83nbaDLFtUYBW46uWqZSxF6kKGCnoEk",
-    "10th_Science": "1Z5Lh-v0lzHZ6tc-SZFZGJQsbykeCW57P",
-    "10th_English": "1qYkk7srJSnfzSQahhdcSGFbZ48uptr_d",
-    "10th_Social Science": "1fqQlgUs6f8V4CMEEkFxM6lDLHi3FePpq"
-}
-
 # Streamlit Navigation
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ["Register", "Dashboard"])
 
 if page == "Register":
-    st.title("📚 Student Registration")
+    st.title("\U0001F4DA Student Registration")
 
     # Registration Form
     with st.form("registration_form"):
-        name = st.text_input("👤 Name", max_chars=100)
-        password = st.text_input("🔑 Password", type="password", max_chars=255)
-        mobile_number = st.text_input("📱 Mobile Number", max_chars=20)
-        email = st.text_input("📧 Email", max_chars=100)
-        class_name = st.text_input("🏫 Class", max_chars=10)
-        age = st.number_input("🎂 Age", min_value=1, max_value=100, step=1)
+        name = st.text_input("\U0001F464 Name", max_chars=100)
+        password = st.text_input("\U0001F511 Password", type="password", max_chars=255)
+        mobile_number = st.text_input("\U0001F4F1 Mobile Number", max_chars=20)
+        email = st.text_input("\U0001F4E7 Email", max_chars=100)
+        class_name = st.text_input("\U0001F3EB Class", max_chars=10)
+        age = st.number_input("\U0001F382 Age", min_value=1, max_value=100, step=1)
         gender = st.selectbox("⚧️ Gender", ["Male", "Female", "Other"])
-        math = st.number_input("📐 Math Score", min_value=0, max_value=100, step=1)
-        english = st.number_input("📖 English Score", min_value=0, max_value=100, step=1)
-        science = st.number_input("🔬 Science Score", min_value=0, max_value=100, step=1)
-        computer = st.number_input("💻 Computer Score", min_value=0, max_value=100, step=1)
-        social_science = st.number_input("🌍 Social Science Score", min_value=0, max_value=100, step=1)
+        math = st.number_input("\U0001F522 Math Score", min_value=0, max_value=100, step=1)
+        english = st.number_input("\U0001F4D6 English Score", min_value=0, max_value=100, step=1)
+        science = st.number_input("\U0001F52C Science Score", min_value=0, max_value=100, step=1)
+        computer = st.number_input("\U0001F4BB Computer Score", min_value=0, max_value=100, step=1)
+        social_science = st.number_input("\U0001F30D Social Science Score", min_value=0, max_value=100, step=1)
         study_time = st.number_input("⏳ Study Time (hours per day)", min_value=0.0, max_value=24.0, step=0.1)
-        submitted = st.form_submit_button("🚀 Register")
+        submitted = st.form_submit_button("\U0001F680 Register")
 
     if submitted:
         if not name or not password or not mobile_number or not email:
@@ -92,8 +79,14 @@ if page == "Register":
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """, (name, hashed_password, mobile_number, email, class_name, age, gender, math, english, science, computer, social_science, study_time))
                     conn.commit()
-                    st.session_state["user_data"] = {"name": name, "math": math, "english": english, "science": science, "computer": computer, "social_science": social_science, "study_time": study_time}
+
+                    # Store Data for Dashboard
+                    st.session_state["user_data"] = {
+                        "name": name, "math": math, "english": english,
+                        "science": science, "computer": computer, "social_science": social_science, "study_time": study_time
+                    }
                     st.success("🎉 Registered successfully! Go to the Dashboard to view study plan.")
+
                 cur.close()
                 conn.close()
             except Exception as e:
@@ -113,14 +106,15 @@ elif page == "Dashboard":
         for subject, time in study_plan.items():
             st.write(f"✅ {subject}: *{time} hours*")
 
-        # Score Summary
-        st.subheader("📈 Performance Overview")
-        scores = {"Math": user_data["math"], "English": user_data["english"], "Science": user_data["science"], "Computer": user_data["computer"], "Social Science": user_data["social_science"]}
-        st.bar_chart(scores)
-
-        # PDF Viewer
+        # PDF Selection Dropdown
         st.subheader("📂 Study Materials")
-        for subject, file_id in pdf_drive_links.items():
-            st.markdown(f"<iframe src='{get_pdf_viewer_link(file_id)}' width='100%' height='400px'></iframe>", unsafe_allow_html=True)
-    else:
-        st.warning("⚠️ No student data found. Please register first.")
+        pdf_drive_links = {
+            "10th_Computer": "1w_hxNste3rVEzx_MwABkY3zbMfwx5qfp",
+            "10th_Mathematics": "1g83nbaDLFtUYBW46uWqZSxF6kKGCnoEk",
+            "10th_Science": "1Z5Lh-v0lzHZ6tc-SZFZGJQsbykeCW57P",
+            "10th_English": "1qYkk7srJSnfzSQahhdcSGFbZ48uptr_d",
+            "10th_Social Science": "1fqQlgUs6f8V4CMEEkFxM6lDLHi3FePpq"
+        }
+        selected_pdf = st.selectbox("Select a subject", list(pdf_drive_links.keys()))
+        if selected_pdf:
+            st.markdown(f"<iframe src='https://drive.google.com/file/d/{pdf_drive_links[selected_pdf]}/preview' width='100%' height='600px'></iframe>", unsafe_allow_html=True)
