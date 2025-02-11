@@ -52,9 +52,9 @@ if st.session_state["quiz_started"]:
     questions = fetch_quiz_questions()
     
     if questions:
-        st.write("Debug: Questions fetched from the database:")
+        # st.write("Debug: Questions fetched from the database:")
         for q in questions:
-            st.write(f"Debug: {q}")
+           # st.write(f"Debug: {q}")
 
         for i, question_data in enumerate(questions):
             if len(question_data) == 6:
