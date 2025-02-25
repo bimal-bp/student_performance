@@ -38,7 +38,7 @@ def dashboard_page():
     st.title("Student Dashboard")
     student_info = st.session_state.get("student_info", {})
     
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 1])
     
     with col1:
         st.subheader("Student Info")
@@ -60,7 +60,16 @@ def dashboard_page():
         if subjects:
             weights = np.random.dirichlet(np.ones(len(subjects)), size=1)[0] * study_time
             df = pd.DataFrame({"Subject": subjects, "Allocated Time (hrs)": weights})
-            st.dataframe(df)
+            st.dataframe(df, height=300)
+    
+    col3, col4 = st.columns([1, 1])
+    with col3:
+        if st.button("Future Score Prediction"):
+            st.write("(Placeholder for future score prediction model)")
+    
+    with col4:
+        if st.button("Take a Quiz"):
+            st.session_state["page"] = "quiz"
     
     if st.button("Back to Login"):
         st.session_state["page"] = "login"
