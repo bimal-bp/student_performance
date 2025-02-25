@@ -33,16 +33,37 @@ def dashboard_page():
     st.title("Student Dashboard")
     student_info = st.session_state.get("student_info", {})
     
-    col1, col2, col3 = st.columns([1, 2, 2])
+    st.markdown("""
+        <style>
+        .small-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .medium-box {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        </style>
+    
+    """, unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
     
     with col1:
+        st.markdown('<div class="small-box">', unsafe_allow_html=True)
         st.subheader("Student Info")
         st.write(f"**Name:** {student_info.get('name', '')}")
         st.write(f"**Age:** {student_info.get('age', '')}")
         st.write(f"**Gender:** {student_info.get('gender', '')}")
         st.write(f"**Email:** {student_info.get('mail', '')}")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     with col2:
+        st.markdown('<div class="small-box">', unsafe_allow_html=True)
         st.subheader("Study Time Allocation")
         study_time = student_info.get("study_time", 10)
         subjects = student_info.get("selected_subjects", [])
@@ -51,16 +72,22 @@ def dashboard_page():
             weights = np.random.dirichlet(np.ones(len(subjects)), size=1)[0] * study_time
             df = pd.DataFrame({"Subject": subjects, "Allocated Time (hrs)": weights})
             st.dataframe(df)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="medium-box">', unsafe_allow_html=True)
+    st.subheader("Reading Content")
+    st.write("(Placeholder for study materials and resources)")
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    col3, col4 = st.columns(2)
     
     with col3:
-        st.subheader("Reading Content")
-        st.write("(Placeholder for study materials and resources)")
+        if st.button("Predict Your Future Score"):
+            st.write("(Placeholder for prediction logic)")
     
-    if st.button("Predict Your Future Score"):
-        st.write("(Placeholder for prediction logic)")
-    
-    if st.button("Quiz Section"):
-        st.session_state["page"] = "quiz"
+    with col4:
+        if st.button("Quiz Section"):
+            st.session_state["page"] = "quiz"
 
 def quiz_page():
     st.title("Quiz Section")
