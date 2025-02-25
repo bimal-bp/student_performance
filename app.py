@@ -1,135 +1,80 @@
 import streamlit as st
-import psycopg2
+import pandas as pd
+import numpy as np
 
-# Database Connection (NeonDB)
-DB_URL = "postgresql://neondb_owner:npg_hnkGvx5eFaf0@ep-crimson-bread-a136p4y6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+def login_page():
+    st.title("Student Login")
+    name = st.text_input("Name")
+    age = st.number_input("Age", min_value=5, max_value=100, step=1)
+    gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+    number = st.text_input("Phone Number")
+    mail = st.text_input("Email")
+    study_time = st.slider("Study Time per Week (hrs)", 0, 50, 10)
+    
+    subjects = [
+        "Data Structures and Algorithms", "Operating Systems", "Database Management Systems",
+        "Computer Networks", "Software Engineering", "Python", "Object-Oriented Programming (Java/C/C++)",
+        "Web Technologies", "Theory of Computation", "Compiler Design", "Artificial Intelligence",
+        "Machine Learning", "Cloud Computing", "Cybersecurity", "Distributed Systems",
+        "Deep Learning", "Data Mining", "Big Data Analytics", "Natural Language Processing",
+        "Reinforcement Learning", "Data Visualization", "Business Intelligence"
+    ]
+    selected_subjects = st.multiselect("Select 10 Subjects", subjects, max_selections=10)
+    
+    if st.button("Go to Dashboard") and len(selected_subjects) == 10:
+        st.session_state["student_info"] = {
+            "name": name, "age": age, "gender": gender,
+            "number": number, "mail": mail, "study_time": study_time,
+            "selected_subjects": selected_subjects
+        }
+        st.session_state["page"] = "dashboard"
 
-def get_db_connection():
-    return psycopg2.connect(DB_URL)
+def dashboard_page():
+    st.title("Student Dashboard")
+    student_info = st.session_state.get("student_info", {})
+    
+    col1, col2, col3 = st.columns([1, 2, 2])
+    
+    with col1:
+        st.subheader("Student Info")
+        st.write(f"**Name:** {student_info.get('name', '')}")
+        st.write(f"**Age:** {student_info.get('age', '')}")
+        st.write(f"**Gender:** {student_info.get('gender', '')}")
+        st.write(f"**Email:** {student_info.get('mail', '')}")
+    
+    with col2:
+        st.subheader("Study Time Allocation")
+        study_time = student_info.get("study_time", 10)
+        subjects = student_info.get("selected_subjects", [])
+        
+        if subjects:
+            weights = np.random.dirichlet(np.ones(len(subjects)), size=1)[0] * study_time
+            df = pd.DataFrame({"Subject": subjects, "Allocated Time (hrs)": weights})
+            st.dataframe(df)
+    
+    with col3:
+        st.subheader("Reading Content")
+        st.write("(Placeholder for study materials and resources)")
+    
+    if st.button("Predict Your Future Score"):
+        st.write("(Placeholder for prediction logic)")
+    
+    if st.button("Quiz Section"):
+        st.session_state["page"] = "quiz"
 
-# Create users table if not exists
-conn = get_db_connection()
-c = conn.cursor()
-c.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY, 
-        name TEXT, 
-        email TEXT UNIQUE, 
-        password TEXT
-    )
-''')
-conn.commit()
-conn.close()
+def quiz_page():
+    st.title("Quiz Section")
+    st.write("(Placeholder for quiz questions based on selected subjects)")
+    
+    if st.button("Back to Dashboard"):
+        st.session_state["page"] = "dashboard"
 
-# Session state initialization
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-    st.session_state.user_email = None
+if "page" not in st.session_state:
+    st.session_state["page"] = "login"
 
-# Function to register a new user
-def register_user(name, email, password):
-    conn = get_db_connection()
-    c = conn.cursor()
-    try:
-        c.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", (name, email, password))
-        conn.commit()
-        st.success("Registration successful! You can now log in.")
-    except psycopg2.IntegrityError:
-        st.error("Email already registered. Try logging in.")
-    finally:
-        c.close()
-        conn.close()
-
-# Function to validate user login
-def login_user(email, password):
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE email = %s AND password = %s", (email, password))
-    user = c.fetchone()
-    c.close()
-    conn.close()
-    if user:
-        st.session_state.authenticated = True
-        st.session_state.user_email = email
-        st.session_state.user_name = user[1]
-        st.success(f"Welcome, {user[1]}! 🎉")
-    else:
-        st.error("Invalid email or password. Please try again.")
-
-# Function to update user profile
-def update_profile(new_name, new_password):
-    if st.session_state.authenticated:
-        conn = get_db_connection()
-        c = conn.cursor()
-        c.execute("UPDATE users SET name = %s, password = %s WHERE email = %s", (new_name, new_password, st.session_state.user_email))
-        conn.commit()
-        c.close()
-        conn.close()
-        st.session_state.user_name = new_name
-        st.success("Profile updated successfully!")
-
-# Function to logout
-def logout():
-    st.session_state.authenticated = False
-    st.session_state.user_email = None
-    st.session_state.user_name = None
-    st.success("You have been logged out.")
-
-# Sidebar Navigation
-st.sidebar.title("📌 Navigation")
-menu = st.sidebar.radio("Select an option:", ["Home", "Login", "Register", "Dashboard", "Update Profile", "Logout"])
-
-# Home Page
-if menu == "Home":
-    st.title("📚 Study Dashboard")
-    st.write("Welcome to the study dashboard. Register or log in to access your personalized study plan.")
-
-# Registration Page
-elif menu == "Register":
-    st.title("📝 Register")
-    name = st.text_input("Full Name")
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-    if st.button("Register"):
-        if name and email and password:
-            register_user(name, email, password)
-        else:
-            st.warning("Please fill all fields.")
-
-# Login Page
-elif menu == "Login":
-    st.title("🔐 Login")
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        if email and password:
-            login_user(email, password)
-        else:
-            st.warning("Please enter email and password.")
-
-# Dashboard Page (Only for logged-in users)
-elif menu == "Dashboard":
-    if st.session_state.authenticated:
-        st.title(f"📌 Welcome, {st.session_state.user_name}!")
-        st.subheader("Your Study Plan 📖")
-        st.write("📝 Personalized study plan coming soon...")
-    else:
-        st.warning("Please log in to access the dashboard.")
-
-# Update Profile Page
-elif menu == "Update Profile":
-    if st.session_state.authenticated:
-        st.title("🔧 Update Profile")
-        new_name = st.text_input("New Name", st.session_state.user_name)
-        new_password = st.text_input("New Password", type="password")
-        if st.button("Update"):
-            if new_name and new_password:
-                update_profile(new_name, new_password)
-            else:
-                st.warning("Please enter all fields.")
-    else:
-        st.warning("Please log in to update your profile.")
-
-# Logout Page
-elif menu == "Logout":
-    logout()
+if st.session_state["page"] == "login":
+    login_page()
+elif st.session_state["page"] == "dashboard":
+    dashboard_page()
+elif st.session_state["page"] == "quiz":
+    quiz_page()
