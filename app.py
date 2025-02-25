@@ -9,6 +9,10 @@ def login_page():
     gender = st.selectbox("Gender", ["Male", "Female", "Other"])
     number = st.text_input("Phone Number")
     mail = st.text_input("Email")
+    st.write("### Select Your Proficiencies")
+    coding = st.checkbox("Coding")
+    mathematics = st.checkbox("Mathematics")
+    problem_solving = st.checkbox("Problem Solving")
     study_time = st.slider("Study Time per Week (hrs)", 0, 50, 10)
     
     subjects = [
