@@ -36,17 +36,35 @@ def dashboard_page():
     st.markdown("""
         <style>
         .small-box {
-            background-color: #f8f9fa;
+            background-color: #e3f2fd;  /* Light blue background */
             padding: 15px;
             border-radius: 10px;
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+            color: #0d47a1;  /* Dark blue text */
         }
         .medium-box {
-            background-color: #ffffff;
+            background-color: #fff3e0;  /* Light orange background */
             padding: 20px;
             border-radius: 10px;
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            color: #e65100;  /* Dark orange text */
+        }
+        .header {
+            color: #1a237e;  /* Dark blue header text */
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .button-style {
+            background-color: #4caf50;  /* Green button background */
+            color: white;  /* White button text */
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .button-style:hover {
+            background-color: #45a049;  /* Darker green on hover */
         }
         </style>
     
@@ -85,11 +103,11 @@ def dashboard_page():
     col3, col4 = st.columns(2)
     
     with col3:
-        if st.button("Predict Your Future Score"):
+        if st.button("Predict Your Future Score", key="predict_button"):
             st.write("(Placeholder for prediction logic)")
     
     with col4:
-        if st.button("Quiz Section"):
+        if st.button("Quiz Section", key="quiz_button"):
             st.session_state["page"] = "quiz"
 def quiz_page():
     st.title("Quiz Section")
