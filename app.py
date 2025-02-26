@@ -76,7 +76,7 @@ def dashboard():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("SELECT id, name, age, email, mobile_number, selected_subjects FROM students ORDER BY id DESC LIMIT 10;")
+        cur.execute("SELECT id, name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, study_time_per_week FROM students ORDER BY id DESC LIMIT 10;")
         students = cur.fetchall()
         cur.close()
         conn.close()
@@ -85,72 +85,48 @@ def dashboard():
             st.write("### Recent Students:")
             for student in students:
                 st.write(f"**{student[1]}**, Age: {student[2]}, Email: {student[3]}, Mobile: {student[4]}")
-                st.write("Selected Subjects:")
-                for subject in student[5]:
-                    st.write(f"- {subject}")
+                st.write(f"Coding Efficiency: {student[5]}")
+                st.write(f"Math Efficiency: {student[6]}")
+                st.write(f"Problem Solving Efficiency: {student[7]}")
+                st.write(f"Study Time Per Week: {student[8]} hours")
+                st.write("---")
         else:
             st.write("No student data available.")
     except Exception as e:
         st.error(f"Error loading dashboard: {e}")
 
-def update_student(student_id):
+def update_student():
     st.title("Update Student Information")
     
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM students WHERE id = %s", (student_id,))
-    student = cur.fetchone()
-    cur.close()
-    conn.close()
+    email = st.text_input("Enter Student Email")
     
-    if student:
-        name = st.text_input("Name", value=student[1])
-        age = st.number_input("Age", min_value=1, max_value=100, value=student[2])
-        email = st.text_input("Email", value=student[3])
-        mobile_number = st.text_input("Mobile Number", value=student[4])
-        coding_eff = st.selectbox("Coding Efficiency", ["low", "intermediate", "high"], index=["low", "intermediate", "high"].index(student[5]))
-        math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"], index=["low", "intermediate", "high"].index(student[6]))
-        problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"], index=["low", "intermediate", "high"].index(student[7]))
+    if email:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM students WHERE email = %s", (email,))
+        student = cur.fetchone()
+        cur.close()
+        conn.close()
         
-        subjects = [
-            "Data Structures and Algorithms", "Operating Systems", "Database Management Systems (DBMS)", "Computer Networks",
-            "Software Engineering", "Python", "Object-Oriented Programming (Java/C/C++)", "Web Technologies",
-            "Theory of Computation", "Compiler Design", "Artificial Intelligence", "Machine Learning",
-            "Cloud Computing", "Cybersecurity", "Distributed Systems", "Electrical Machines", "Power Systems",
-            "Control Systems", "Electrical Circuit Analysis", "Power Electronics", "Analog Electronics",
-            "Digital Electronics", "Electromagnetic Field Theory", "Microprocessors and Microcontrollers",
-            "Renewable Energy Systems", "Electrical Measurements and Instrumentation", "Analog and Digital Communication",
-            "Signals and Systems", "Digital Signal Processing (DSP)", "VLSI Design", "Optical Communication",
-            "Embedded Systems", "Wireless Communication", "Antenna and Wave Propagation", "Structural Analysis",
-            "Fluid Mechanics", "Engineering Mechanics", "Geotechnical Engineering", "Construction Materials and Techniques",
-            "Surveying", "Reinforced Concrete Structures", "Steel Structures", "Transportation Engineering",
-            "Environmental Engineering", "Hydrology and Water Resources Engineering", "Foundation Engineering"
-        ]
-        
-        selected_subjects = st.multiselect(
-            "Select up to 10 subjects",
-            options=subjects,
-            default=student[8],
-            key=f"subject_selection_{student_id}",
-            max_selections=10  # Limit to 10 subjects
-        )
-        
-        study_time = st.number_input("Study Time Per Week (hours)", min_value=1, max_value=168, value=student[9])
-        
-        if st.button("Update Information"):
-            if len(selected_subjects) != 10:
-                st.error("Please select exactly 10 subjects.")
-            else:
+        if student:
+            st.write(f"Updating information for **{student[1]}**")
+            
+            coding_eff = st.selectbox("Coding Efficiency", ["low", "intermediate", "high"], index=["low", "intermediate", "high"].index(student[5]))
+            math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"], index=["low", "intermediate", "high"].index(student[6]))
+            problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"], index=["low", "intermediate", "high"].index(student[7]))
+            study_time = st.number_input("Study Time Per Week (hours)", min_value=1, max_value=168, value=student[9])
+            
+            if st.button("Update Information"):
                 conn = get_db_connection()
                 cur = conn.cursor()
                 try:
                     cur.execute(
                         sql.SQL("""
                             UPDATE students
-                            SET name = %s, age = %s, email = %s, mobile_number = %s, coding_efficiency = %s, math_efficiency = %s, problem_solving_efficiency = %s, selected_subjects = %s, study_time_per_week = %s
-                            WHERE id = %s
+                            SET coding_efficiency = %s, math_efficiency = %s, problem_solving_efficiency = %s, study_time_per_week = %s
+                            WHERE email = %s
                         """),
-                        (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, selected_subjects, study_time, student_id)
+                        (coding_eff, math_eff, problem_solving_eff, study_time, email)
                     )
                     conn.commit()
                     st.success("Student information updated successfully!")
@@ -159,6 +135,8 @@ def update_student(student_id):
                 finally:
                     cur.close()
                     conn.close()
+        else:
+            st.error("No student found with the provided email.")
 
 def main():
     st.sidebar.title("Navigation")
@@ -169,9 +147,7 @@ def main():
     elif selection == "Dashboard":
         dashboard()
     elif selection == "Update Student":
-        student_id = st.sidebar.number_input("Enter Student ID", min_value=1)
-        if student_id:
-            update_student(student_id)
+        update_student()
 
 if __name__ == "__main__":
     main()
