@@ -62,23 +62,72 @@ def login_and_student_info():
 
     # Subject selection
     subjects = {
-        "Data Structures and Algorithms": 10,
-        "Operating Systems": 9,
-        "Database Management Systems (DBMS)": 9,
-        "Computer Networks": 8,
-        "Software Engineering": 7,
-        "Python": 10,
-        "Object-Oriented Programming (Java/C/C++)": 10,
-        "Web Technologies": 7,
-        "Theory of Computation": 8,
-        "Compiler Design": 7,
-        "Artificial Intelligence": 9,
-        "Machine Learning": 9,
-        "Cloud Computing": 8,
-        "Cybersecurity": 8,
-        "Distributed Systems": 7
+        "Computer Science and Engineering (CSE)": {
+            "Data Structures and Algorithms": 10,
+            "Operating Systems": 9,
+            "Database Management Systems (DBMS)": 9,
+            "Computer Networks": 8,
+            "Software Engineering": 7,
+            "Python": 10,
+            "Object-Oriented Programming (Java/C/C++)": 10,
+            "Web Technologies": 7,
+            "Theory of Computation": 8,
+            "Compiler Design": 7,
+            "Artificial Intelligence": 9,
+            "Machine Learning": 9,
+            "Cloud Computing": 8,
+            "Cybersecurity": 8,
+            "Distributed Systems": 7
+        },
+        "Electrical and Electronics Engineering (EEE)": {
+            "Electrical Machines": 10,
+            "Power Systems": 9,
+            "Control Systems": 9,
+            "Electrical Circuit Analysis": 10,
+            "Power Electronics": 9,
+            "Analog Electronics": 8,
+            "Digital Electronics": 8,
+            "Electromagnetic Field Theory": 7,
+            "Microprocessors and Microcontrollers": 8,
+            "Renewable Energy Systems": 7,
+            "Electrical Measurements and Instrumentation": 8
+        },
+        "Electronics and Communication Engineering (ECE)": {
+            "Analog and Digital Communication": 10,
+            "Signals and Systems": 9,
+            "Digital Signal Processing (DSP)": 9,
+            "VLSI Design": 9,
+            "Microprocessors and Microcontrollers": 8,
+            "Electromagnetic Field Theory": 8,
+            "Control Systems": 8,
+            "Optical Communication": 7,
+            "Embedded Systems": 9,
+            "Wireless Communication": 9,
+            "Antenna and Wave Propagation": 7
+        },
+        "Civil Engineering": {
+            "Structural Analysis": 10,
+            "Fluid Mechanics": 9,
+            "Engineering Mechanics": 8,
+            "Geotechnical Engineering": 9,
+            "Construction Materials and Techniques": 8,
+            "Surveying": 8,
+            "Reinforced Concrete Structures": 10,
+            "Steel Structures": 8,
+            "Transportation Engineering": 8,
+            "Environmental Engineering": 9,
+            "Hydrology and Water Resources Engineering": 7,
+            "Foundation Engineering": 8
+        }
     }
-    selected_subjects = st.multiselect("Select 10 Subjects", list(subjects.keys()), default=list(subjects.keys())[:10])
+
+    # Display subjects by category
+    selected_subjects = []
+    for category, category_subjects in subjects.items():
+        st.subheader(category)
+        for subject, rating in category_subjects.items():
+            if st.checkbox(f"{subject} – {rating}/10", key=subject):
+                selected_subjects.append(subject)
 
     # Study time input
     study_time = st.number_input("Study Time Per Week (hours)", min_value=1, max_value=168)
