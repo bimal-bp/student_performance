@@ -17,9 +17,8 @@ model = genai.GenerativeModel('gemini-pro')
 def get_db_connection():
     return psycopg2.connect(DB_URL)
 
-# Predefined subject ratings (updated with shorter subject names)
+# Predefined subject ratings
 subject_ratings = {
-    # Computer Science
     "Data Structures": 10,
     "Operating Systems": 9,
     "DBMS": 9,
@@ -49,7 +48,6 @@ subject_ratings = {
     "Financial Accounting": 8,
     "Process Management": 8,
     "Enterprise Systems": 8,
-    # Electrical Engineering
     "Electrical Machines": 10,
     "Power Systems": 9,
     "Control Systems": 9,
@@ -61,7 +59,6 @@ subject_ratings = {
     "Microprocessors": 8,
     "Renewable Energy": 7,
     "Measurements": 8,
-    # Electronics and Communication
     "Analog & Digital Comm": 10,
     "Signals & Systems": 9,
     "DSP": 9,
@@ -173,35 +170,49 @@ def dashboard():
         conn.close()
 
         if student:
-            st.write("### Student Information")
-            st.write(f"**Name:** {student[0]}")
-            st.write(f"**Age:** {student[1]}")
-            st.write(f"**Email:** {student[2]}")
-            st.write(f"**Mobile Number:** {student[3]}")
-            st.write(f"**Coding Efficiency:** {student[4]}")
-            st.write(f"**Math Efficiency:** {student[5]}")
-            st.write(f"**Problem Solving Efficiency:** {student[6]}")
-            st.write(f"**Study Time Per Week:** {student[8]} hours")
+            # Display Student Information and Study Time Allocation in two columns
+            col1, col2 = st.columns(2)
 
-            st.write("### Study Time Allocation")
-            selected_subjects = student[7].split(", ")
-            study_time = student[8]
-            coding_eff = student[4]
-            problem_solving_eff = student[6]
-            study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
+            with col1:
+                st.write("### Student Information")
+                st.write(f"**Name:** {student[0]}")
+                st.write(f"**Age:** {student[1]}")
+                st.write(f"**Email:** {student[2]}")
+                st.write(f"**Mobile Number:** {student[3]}")
+                st.write(f"**Coding Efficiency:** {student[4]}")
+                st.write(f"**Math Efficiency:** {student[5]}")
+                st.write(f"**Problem Solving Efficiency:** {student[6]}")
+                st.write(f"**Study Time Per Week:** {student[8]} hours")
 
-            for subject, hours in study_allocation.items():
-                st.write(f"- **{subject}:** {hours} hours/week")
+            with col2:
+                st.write("### Study Time Allocation")
+                selected_subjects = student[7].split(", ")
+                study_time = student[8]
+                coding_eff = student[4]
+                problem_solving_eff = student[6]
+                study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
 
-            # Add Predict Future Score, Quiz Section, and Generate Content buttons
+                for subject, hours in study_allocation.items():
+                    st.write(f"- **{subject}:** {hours} hours/week")
+
+            # Add three buttons below the columns
             st.markdown("---")
-            if st.button("Take a Quiz 📝"):
-                st.session_state["page"] = "Quiz"
-                st.rerun()
-            if st.button("Generate Study Content 📚"):
-                content = generate_content(selected_subjects)
-                st.write("### Generated Study Content")
-                st.write(content)
+            col3, col4, col5 = st.columns(3)
+
+            with col3:
+                if st.button("Predict Future Score 🎯"):
+                    st.write("🚧 Feature under construction!")  # Placeholder for future functionality
+
+            with col4:
+                if st.button("Take a Quiz 📝"):
+                    st.session_state["page"] = "Quiz"
+                    st.rerun()
+
+            with col5:
+                if st.button("Generate Study Content 📚"):
+                    content = generate_content(selected_subjects)
+                    st.write("### Generated Study Content")
+                    st.write(content)
 
         else:
             st.warning("No records found for the logged-in user.")
