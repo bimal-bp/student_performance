@@ -261,19 +261,34 @@ def quiz_section():
             question = selected_questions[st.session_state['current_question']]
             st.write(f"**Question {st.session_state['current_question'] + 1}:** {question['question']}")
             
+            # Display options using st.radio
             options = question['options']
             user_answer = st.radio("Select your answer:", options, key=f"q{st.session_state['current_question']}")
             
+            # Submit button
             if st.button("Submit Answer"):
+                # Check if the selected answer is correct
                 if user_answer == question['answer']:
                     st.session_state['score'] += 1
+                # Store the user's answer
                 st.session_state['user_answers'].append(user_answer)
+                # Move to the next question
                 st.session_state['current_question'] += 1
-                st.rerun()
+                st.rerun()  # Refresh the app to show the next question
         else:
+            # Quiz ended
             st.write("### Quiz Ended!")
             st.write(f"**Your Score:** {st.session_state['score']}/{len(selected_questions)}")
             
+            # Show correct answers and user answers
+            st.write("### Review Your Answers:")
+            for i, (question, user_answer) in enumerate(zip(selected_questions, st.session_state['user_answers'])):
+                st.write(f"**Question {i + 1}:** {question['question']}")
+                st.write(f"**Your Answer:** {user_answer}")
+                st.write(f"**Correct Answer:** {question['answer']}")
+                st.write("---")
+            
+            # Restart quiz button
             if st.button("Restart Quiz"):
                 st.session_state['quiz_started'] = False
                 st.session_state['current_question'] = 0
@@ -281,10 +296,10 @@ def quiz_section():
                 st.session_state['score'] = 0
                 st.rerun()
 
+    # Back to Dashboard button
     if st.button("Back to Dashboard"):
         st.session_state["page"] = "Dashboard"
         st.rerun()
-
 def main():
     if "page" not in st.session_state:
         st.session_state["page"] = "Student Info"
