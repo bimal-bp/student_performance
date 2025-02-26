@@ -8,9 +8,9 @@ DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-poole
 def get_db_connection():
     return psycopg2.connect(DB_URL)
 
-def allocate_study_time(subject_ratings, total_hours):
+def allocate_study_time(subject_ratings, total_hours, efficiency_factor):
     weights = np.array(subject_ratings) / sum(subject_ratings)
-    allocated_time = np.round(weights * total_hours, 2)
+    allocated_time = np.round(weights * total_hours * efficiency_factor, 2)
     return allocated_time
 
 def student_info():
@@ -30,48 +30,62 @@ def student_info():
         math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"])
         problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"])
     
+    efficiency_map = {"low": 0.8, "intermediate": 1.0, "high": 1.2}
+    efficiency_factor = np.mean([
+        efficiency_map[coding_eff], 
+        efficiency_map[math_eff], 
+        efficiency_map[problem_solving_eff]
+    ])
+    
     subjects = [
         "Data Structures and Algorithms", "Operating Systems", "Database Management Systems (DBMS)", "Computer Networks",
         "Software Engineering", "Python", "Object-Oriented Programming (Java/C/C++)", "Web Technologies",
         "Theory of Computation", "Compiler Design", "Artificial Intelligence", "Machine Learning",
-        "Cloud Computing", "Cybersecurity", "Distributed Systems", "Electrical Machines", "Power Systems",
-        "Control Systems", "Electrical Circuit Analysis", "Power Electronics", "Analog Electronics"
+        "Cloud Computing", "Cybersecurity", "Distributed Systems",
+        "Machine Learning", "Artificial Intelligence", "Deep Learning", "Data Mining", "Big Data Analytics",
+        "Natural Language Processing", "Reinforcement Learning", "Data Visualization", "Business Intelligence",
+        "Neural Networks", "Computer Vision", "Pattern Recognition",
+        "Business Strategy and Analytics", "Financial and Management Accounting", "Business Process Management", "Enterprise Systems"
     ]
     
-    selected_subjects = st.multiselect("Select up to 20 subjects", options=subjects, default=[], key="subject_selection")
-    subject_ratings = []
+    selected_subjects = st.multiselect("Select up to 10 subjects", options=subjects, default=[], key="subject_selection")
+    if len(selected_subjects) > 10:
+        st.error("Please select a maximum of 10 subjects.")
+        return
     
-    for subject in selected_subjects:
-        rating = st.slider(f"Rate proficiency in {subject}", 1, 10, 5)
-        subject_ratings.append(rating)
-    
+    subject_ratings = [st.slider(f"Rate proficiency in {subject}", 1, 10, 5) for subject in selected_subjects]
     study_time = st.number_input("Total Study Time Per Week (hours)", min_value=1, max_value=168)
     
     if st.button("Save Information"):
-        if len(selected_subjects) > 20:
-            st.error("Please select a maximum of 20 subjects.")
-        else:
-            allocated_times = allocate_study_time(subject_ratings, study_time)
-            study_allocation = dict(zip(selected_subjects, allocated_times))
-            
-            conn = get_db_connection()
-            cur = conn.cursor()
-            try:
-                subjects_str = ", ".join(selected_subjects)
-                cur.execute(
-                    sql.SQL("""
-                        INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week, study_allocation)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """),
-                    (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, subjects_str, study_time, str(study_allocation))
-                )
-                conn.commit()
-                st.success("Student information saved successfully!")
-            except Exception as e:
-                st.error(f"Error: {e}")
-            finally:
-                cur.close()
-                conn.close()
+        allocated_times = allocate_study_time(subject_ratings, study_time, efficiency_factor)
+        study_allocation = dict(zip(selected_subjects, allocated_times))
+        
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                sql.SQL("""
+                    INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week, study_allocation)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (email) DO UPDATE 
+                    SET age = EXCLUDED.age,
+                        mobile_number = EXCLUDED.mobile_number,
+                        coding_efficiency = EXCLUDED.coding_efficiency,
+                        math_efficiency = EXCLUDED.math_efficiency,
+                        problem_solving_efficiency = EXCLUDED.problem_solving_efficiency,
+                        selected_subjects = EXCLUDED.selected_subjects,
+                        study_time_per_week = EXCLUDED.study_time_per_week,
+                        study_allocation = EXCLUDED.study_allocation
+                """),
+                (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, ", ".join(selected_subjects), study_time, str(study_allocation))
+            )
+            conn.commit()
+            st.success("Student information saved successfully!")
+        except Exception as e:
+            st.error(f"Error: {e}")
+        finally:
+            cur.close()
+            conn.close()
 
 def dashboard():
     st.header("Student Dashboard")
