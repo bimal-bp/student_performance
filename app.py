@@ -7,15 +7,9 @@ DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-poole
 def get_db_connection():
     return psycopg2.connect(DB_URL)
 
-def login_and_student_info():
+def student_info():
     st.title("Student Performance Web Application")
-    st.header("Login and Student Information")
-    
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    
-    if st.button("Login"):
-        st.success("Login successful!")
+    st.header("Student Information")
     
     col1, col2 = st.columns(2)
     
@@ -75,6 +69,6 @@ def login_and_student_info():
             finally:
                 cur.close()
                 conn.close()
-    
+
 if __name__ == "__main__":
-    login_and_student_info()
+    student_info()
