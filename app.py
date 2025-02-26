@@ -54,7 +54,7 @@ def allocate_study_time(selected_subjects, total_hours, efficiency_level, proble
     return dict(zip(selected_subjects, allocated_times))
 
 def student_info():
-    st.title("📚 Learn Mate - Student Performance Application")
+    st.title("Learn Mate - Student Performance Application")
     st.header("Student Information")
 
     col1, col2 = st.columns(2)
@@ -69,16 +69,13 @@ def student_info():
         math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"])
         problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"])
 
-    selected_subjects = st.multiselect("Select up to 10 subjects", options=list(subject_ratings.keys()), default=[])
+    selected_subjects = st.multiselect("Select subjects", options=list(subject_ratings.keys()), default=[])
     
-    if len(selected_subjects) > 10:
-        st.error("⚠ Please select a maximum of 10 subjects.")
-
     study_time = st.number_input("Total Study Time Per Week (hours)", min_value=1, max_value=168)
 
     if st.button("Save Information"):
-        if len(selected_subjects) > 10:
-            st.error("⚠ Please select a maximum of 10 subjects.")
+        if not email:
+            st.error("Please enter an email.")
         else:
             conn = get_db_connection()
             cur = conn.cursor()
@@ -101,12 +98,9 @@ def student_info():
                 )
                 conn.commit()
                 st.success("✅ Student information saved successfully!")
-
-                # Store email in session and redirect to the dashboard
                 st.session_state["email"] = email
                 st.session_state["page"] = "Dashboard"
-                st.rerun()  # Updated from st.experimental_rerun()
-
+                st.rerun()
             except Exception as e:
                 st.error(f"❌ Error: {e}")
             finally:
@@ -114,11 +108,10 @@ def student_info():
                 conn.close()
 
 def dashboard():
-    st.header("📊 Student Dashboard")
+    st.header("Student Dashboard")
 
-    # Ensure email is stored in session
     if "email" not in st.session_state:
-        st.warning("⚠ Please log in to view your dashboard.")
+        st.warning("Please log in to view your dashboard.")
         return
 
     email = st.session_state["email"]
@@ -135,27 +128,33 @@ def dashboard():
         conn.close()
 
         if student:
-            st.write(f"*Name:* {student[0]}")
-            st.write(f"*Age:* {student[1]}")
-            st.write(f"*Email:* {student[2]}")
-            st.write(f"*Mobile Number:* {student[3]}")
-            st.write(f"*Coding Efficiency:* {student[4]}")
-            st.write(f"*Math Efficiency:* {student[5]}")
-            st.write(f"*Problem Solving Efficiency:* {student[6]}")
-            st.write(f"*Study Time Per Week:* {student[8]} hours")
+            st.write(f"**Name:** {student[0]}")
+            st.write(f"**Age:** {student[1]}")
+            st.write(f"**Email:** {student[2]}")
+            st.write(f"**Mobile Number:** {student[3]}")
+            st.write(f"**Coding Efficiency:** {student[4]}")
+            st.write(f"**Math Efficiency:** {student[5]}")
+            st.write(f"**Problem Solving Efficiency:** {student[6]}")
+            st.write(f"**Study Time Per Week:** {student[8]} hours")
 
-            # Study time allocation
             selected_subjects = student[7].split(", ")
             study_time = student[8]
             coding_eff = student[4]
             problem_solving_eff = student[6]
             study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
 
-            st.write("### 🕒 Study Time Allocation:")
-            for subject, hours in study_allocation.items():
-                st.write(f"📌 *{subject}:* {hours} hours/week")
+            st.write("### Study Time Allocation")
+            col1, col2 = st.columns(2)
+            subjects = list(study_allocation.keys())
+            times = list(study_allocation.values())
+            mid = len(subjects) // 2
+            
+            with col1:
+                st.table({"Subject": subjects[:mid], "Hours/Week": times[:mid]})
+            with col2:
+                st.table({"Subject": subjects[mid:], "Hours/Week": times[mid:]})
         else:
-            st.warning("⚠ No records found for the logged-in user.")
+            st.warning("No records found for the logged-in user.")
     except Exception as e:
         st.error(f"❌ Error loading dashboard: {e}")
 
