@@ -286,38 +286,68 @@ def dashboard():
     except Exception as e:
         st.error(f"❌ Error loading dashboard: {e}")
 
+
+
 def quiz_section():
     st.header("Quiz Section")
 
-    st.markdown("""
-        <style>
-        .stHeadingContainer h1 {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    # Load the questions from the .pkl file
+    try:
+        with open('questions.pkl', 'rb') as f:
+            data = pickle.load(f)
+    except FileNotFoundError:
+        st.error("The questions file was not found. Please ensure 'questions.pkl' is in the correct directory.")
+        return
 
-    st.write("### Quiz 1: Data Structures")
-    st.write("**Question 1:** What is a binary tree?")
-    answer1 = st.text_input("Your Answer", key="q1")
-    if st.button("Submit Answer 1"):
-        if answer1:
-            st.success("Your answer has been submitted!")
-        else:
-            st.error("Please enter an answer.")
+    # Flatten all questions into a single list
+    all_questions = []
+    for subject, questions in data.items():
+        all_questions.extend(questions)  # Add all questions from each subject to the list
 
-    st.write("### Quiz 2: Operating Systems")
-    st.write("**Question 2:** What is a deadlock?")
-    answer2 = st.text_input("Your Answer", key="q2")
-    if st.button("Submit Answer 2"):
-        if answer2:
-            st.success("Your answer has been submitted!")
+    # Randomly select 30 questions from the flattened list
+    if len(all_questions) >= 30:
+        selected_questions = random.sample(all_questions, 30)
+    else:
+        selected_questions = all_questions  # If fewer than 30 questions, use all available
+
+    # Initialize session state for quiz if not already present
+    if 'quiz_started' not in st.session_state:
+        st.session_state['quiz_started'] = False
+    if 'current_question' not in st.session_state:
+        st.session_state['current_question'] = 0
+    if 'user_answers' not in st.session_state:
+        st.session_state['user_answers'] = []
+    if 'score' not in st.session_state:
+        st.session_state['score'] = 0
+
+    if not st.session_state['quiz_started']:
+        if st.button("Start Quiz"):
+            st.session_state['quiz_started'] = True
+
+    if st.session_state['quiz_started']:
+        if st.session_state['current_question'] < len(selected_questions):
+            question = selected_questions[st.session_state['current_question']]
+            st.write(f"**Question {st.session_state['current_question'] + 1}:** {question['question']}")
+            
+            options = question['options']
+            user_answer = st.radio("Select your answer:", options, key=f"q{st.session_state['current_question']}")
+            
+            if st.button("Submit Answer"):
+                if user_answer == question['answer']:
+                    st.session_state['score'] += 1
+                st.session_state['user_answers'].append(user_answer)
+                st.session_state['current_question'] += 1
+                st.rerun()
         else:
-            st.error("Please enter an answer.")
+            st.write("### Quiz Ended!")
+            st.write(f"**Your Score:** {st.session_state['score']}/{len(selected_questions)}")
+            
+            if st.button("Restart Quiz"):
+                st.session_state['quiz_started'] = False
+                st.session_state['current_question'] = 0
+                st.session_state['user_answers'] = []
+                st.session_state['score'] = 0
+                st.rerun()
 
     if st.button("Back to Dashboard"):
         st.session_state["page"] = "Dashboard"
