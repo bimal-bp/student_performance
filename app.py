@@ -175,20 +175,75 @@ def dashboard():
         conn.close()
 
         if student:
+            # Custom CSS for the dashboard
+            st.markdown("""
+                <style>
+                .stHeadingContainer h1 {
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 10px;
+                    border-radius: 5px;
+                    text-align: center;
+                }
+                .stButton button {
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    width: 100%;
+                    font-size: 16px;
+                }
+                .stButton button:hover {
+                    background-color: #45a049;
+                }
+                .stTextInput input {
+                    border-radius: 5px;
+                    border: 1px solid #ccc;
+                    padding: 8px;
+                    width: 100%;
+                }
+                .stSelectbox select {
+                    border-radius: 5px;
+                    border: 1px solid #ccc;
+                    padding: 8px;
+                    width: 100%;
+                }
+                .stNumberInput input {
+                    border-radius: 5px;
+                    border: 1px solid #ccc;
+                    padding: 8px;
+                    width: 100%;
+                }
+                .stMarkdown {
+                    background-color: #f9f9f9;
+                    padding: 15px;
+                    border-radius: 5px;
+                    border: 1px solid #ddd;
+                    margin-bottom: 10px;
+                }
+                .stMarkdown h3 {
+                    color: #4CAF50;
+                }
+                .stMarkdown p {
+                    color: #333;
+                }
+                .stColumns {
+                    margin-bottom: 20px;
+                }
+                .stColumns > div {
+                    background-color: #f9f9f9;
+                    padding: 15px;
+                    border-radius: 5px;
+                    border: 1px solid #ddd;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown("""
-                    <style>
-                    .stHeadingContainer h1 {
-                        background-color: #4CAF50;
-                        color: white;
-                        padding: 10px;
-                        border-radius: 5px;
-                        text-align: center;
-                    }
-                    </style>
-                """, unsafe_allow_html=True)
                 st.write("### Student Information")
                 st.write(f"**Name:** {student[0]}")
                 st.write(f"**Age:** {student[1]}")
@@ -225,23 +280,6 @@ def dashboard():
                     content = generate_content(selected_subjects)
                     st.write("### Generated Study Content")
                     st.write(content)
-
-            # Add some styling
-            st.markdown("""
-                <style>
-                .stButton button {
-                    background-color: #4CAF50;
-                    color: white;
-                    padding: 10px 20px;
-                    border: none;
-                    border-radius: 5px;
-                    cursor: pointer;
-                }
-                .stButton button:hover {
-                    background-color: #45a049;
-                }
-                </style>
-            """, unsafe_allow_html=True)
 
         else:
             st.warning("No records found for the logged-in user.")
