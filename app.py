@@ -1,7 +1,6 @@
 import streamlit as st
 import psycopg2
 from psycopg2 import sql
-import numpy as np
 
 # Database connection
 DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
@@ -14,21 +13,28 @@ def get_db_connection():
 # AHP (Analytic Hierarchy Process) for time allocation
 def ahp_time_allocation(subjects, coding_eff, math_eff, problem_solving_eff, study_time):
     # Define weights for efficiency levels
-    weights = {
-        'coding': coding_eff / 10,
-        'math': math_eff / 10,
-        'problem_solving': problem_solving_eff / 10
+    efficiency_weights = {
+        'low': 1,
+        'intermediate': 2,
+        'high': 3
     }
 
+    # Assign weights based on efficiency levels
+    coding_weight = efficiency_weights[coding_eff]
+    math_weight = efficiency_weights[math_eff]
+    problem_solving_weight = efficiency_weights[problem_solving_eff]
+
     # Normalize weights
-    total_weight = sum(weights.values())
-    normalized_weights = {k: v / total_weight for k, v in weights.items()}
+    total_weight = coding_weight + math_weight + problem_solving_weight
+    coding_weight_normalized = coding_weight / total_weight
+    math_weight_normalized = math_weight / total_weight
+    problem_solving_weight_normalized = problem_solving_weight / total_weight
 
     # Assign time to subjects based on their ratings and weights
-    subject_ratings = {subject: rating for subject, rating in subjects}
+    subject_ratings = {subject: rating for subject, rating in subjects.items()}
     total_rating = sum(subject_ratings.values())
     time_allocation = {
-        subject: (rating / total_rating) * study_time * normalized_weights['coding']  # Example: prioritize coding
+        subject: (rating / total_rating) * study_time * coding_weight_normalized  # Prioritize coding
         for subject, rating in subject_ratings.items()
     }
 
@@ -44,9 +50,9 @@ def login_and_student_info():
     age = st.number_input("Age", min_value=1, max_value=100)
     email = st.text_input("Email")
     mobile_number = st.text_input("Mobile Number")
-    coding_eff = st.slider("Coding Efficiency (1-10)", 1, 10)
-    math_eff = st.slider("Math Efficiency (1-10)", 1, 10)
-    problem_solving_eff = st.slider("Problem Solving Efficiency (1-10)", 1, 10)
+    coding_eff = st.selectbox("Coding Efficiency", ["low", "intermediate", "high"])
+    math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"])
+    problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"])
 
     # Subject selection
     subjects = {
@@ -116,9 +122,9 @@ def dashboard():
         st.write(f"Age: {student[2]}")
         st.write(f"Email: {student[3]}")
         st.write(f"Mobile Number: {student[4]}")
-        st.write(f"Coding Efficiency: {student[5]}/10")
-        st.write(f"Math Efficiency: {student[6]}/10")
-        st.write(f"Problem Solving Efficiency: {student[7]}/10")
+        st.write(f"Coding Efficiency: {student[5]}")
+        st.write(f"Math Efficiency: {student[6]}")
+        st.write(f"Problem Solving Efficiency: {student[7]}")
         st.write(f"Selected Subjects: {', '.join(student[8])}")
         st.write(f"Study Time Per Week: {student[9]} hours")
 
