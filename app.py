@@ -86,6 +86,7 @@ def student_info():
                         INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (email) DO UPDATE SET 
+                        name = EXCLUDED.name,
                         age = EXCLUDED.age, 
                         mobile_number = EXCLUDED.mobile_number,
                         coding_efficiency = EXCLUDED.coding_efficiency,
@@ -128,31 +129,29 @@ def dashboard():
         conn.close()
 
         if student:
-            st.write(f"**Name:** {student[0]}")
-            st.write(f"**Age:** {student[1]}")
-            st.write(f"**Email:** {student[2]}")
-            st.write(f"**Mobile Number:** {student[3]}")
-            st.write(f"**Coding Efficiency:** {student[4]}")
-            st.write(f"**Math Efficiency:** {student[5]}")
-            st.write(f"**Problem Solving Efficiency:** {student[6]}")
-            st.write(f"**Study Time Per Week:** {student[8]} hours")
-
-            selected_subjects = student[7].split(", ")
-            study_time = student[8]
-            coding_eff = student[4]
-            problem_solving_eff = student[6]
-            study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
-
-            st.write("### Study Time Allocation")
             col1, col2 = st.columns(2)
-            subjects = list(study_allocation.keys())
-            times = list(study_allocation.values())
-            mid = len(subjects) // 2
             
             with col1:
-                st.table({"Subject": subjects[:mid], "Hours/Week": times[:mid]})
+                st.write("### Student Information")
+                st.write(f"**Name:** {student[0]}")
+                st.write(f"**Age:** {student[1]}")
+                st.write(f"**Email:** {student[2]}")
+                st.write(f"**Mobile Number:** {student[3]}")
+                st.write(f"**Coding Efficiency:** {student[4]}")
+                st.write(f"**Math Efficiency:** {student[5]}")
+                st.write(f"**Problem Solving Efficiency:** {student[6]}")
+                st.write(f"**Study Time Per Week:** {student[8]} hours")
+
             with col2:
-                st.table({"Subject": subjects[mid:], "Hours/Week": times[mid:]})
+                st.write("### Study Time Allocation")
+                selected_subjects = student[7].split(", ")
+                study_time = student[8]
+                coding_eff = student[4]
+                problem_solving_eff = student[6]
+                study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
+
+                for subject, hours in study_allocation.items():
+                    st.write(f"- **{subject}:** {hours} hours/week")
         else:
             st.warning("No records found for the logged-in user.")
     except Exception as e:
