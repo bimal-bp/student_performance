@@ -2,9 +2,15 @@ import streamlit as st
 import psycopg2
 from psycopg2 import sql
 import numpy as np
+import google.generativeai as genai
 
 # Database Connection String
 DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+
+# Gemini API Configuration
+GEMINI_API_KEY = "AIzaSyDcfCHQZvn0ivZ0GT-2X0tQ-lR6H-mzMzM"
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel('gemini-pro')
 
 def get_db_connection():
     return psycopg2.connect(DB_URL)
@@ -74,6 +80,11 @@ def allocate_study_time(selected_subjects, total_hours, efficiency_level, proble
     
     allocated_times = np.round(normalized_weights * total_hours, 2)
     return dict(zip(selected_subjects, allocated_times))
+
+def generate_content(subjects):
+    prompt = f"Generate a detailed study guide for the following subjects: {', '.join(subjects)}. Include key topics, resources, and tips for effective learning."
+    response = model.generate_content(prompt)
+    return response.text
 
 def student_info():
     st.title("Learn Mate - Student Performance Application")
@@ -199,9 +210,9 @@ def dashboard():
                 for subject, hours in study_allocation.items():
                     st.write(f"- **{subject}:** {hours} hours/week")
 
-            # Add Predict Future Score and Quiz Section buttons
+            # Add Predict Future Score, Quiz Section, and Generate Content buttons
             st.markdown("---")
-            col3, col4 = st.columns(2)
+            col3, col4, col5 = st.columns(3)
             with col3:
                 if st.button("Predict Future Score 🎯"):
                     st.write("🚧 Feature under construction!")  # Placeholder
@@ -209,6 +220,11 @@ def dashboard():
                 if st.button("Take a Quiz 📝"):
                     st.session_state["page"] = "Quiz"
                     st.rerun()
+            with col5:
+                if st.button("Generate Study Content 📚"):
+                    content = generate_content(selected_subjects)
+                    st.write("### Generated Study Content")
+                    st.write(content)
 
             # Add some styling
             st.markdown("""
