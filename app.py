@@ -55,8 +55,8 @@ def create_tables():
         if conn:
             conn.close()
 
-# Function to insert student data
-def insert_student(name, age, gender, phone, email, coding, math, problem_solving, study_time, subjects):
+# Function to insert or update student data
+def insert_or_update_student(name, age, gender, phone, email, coding, math, problem_solving, study_time, subjects):
     try:
         conn = psycopg2.connect(DB_URL)
         cur = conn.cursor()
@@ -73,7 +73,7 @@ def insert_student(name, age, gender, phone, email, coding, math, problem_solvin
 
         conn.commit()
     except Exception as e:
-        logger.error(f"Error inserting student data: {e}")
+        logger.error(f"Error inserting/updating student data: {e}")
     finally:
         if cur:
             cur.close()
@@ -166,7 +166,7 @@ if st.session_state["page"] == "login":
     selected_subjects = st.multiselect("Select Subjects", subjects, max_selections=10)
 
     if st.button("Save Details"):
-        insert_student(name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, selected_subjects)
+        insert_or_update_student(name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, selected_subjects)
         st.success("Student data saved successfully!")
 
     if st.button("Go to Dashboard") and phone:
