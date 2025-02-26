@@ -3,6 +3,8 @@ import psycopg2
 from psycopg2 import sql
 import numpy as np
 import google.generativeai as genai
+import pickle
+import random
 
 # Database Connection String
 DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
@@ -90,17 +92,13 @@ def student_info():
     st.title("Learn Mate - Student Performance Application")
     st.header("Student Information")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        name = st.text_input("Name")
-        age = st.number_input("Age", min_value=1, max_value=100)
-        email = st.text_input("Email")
-        mobile_number = st.text_input("Mobile Number")
-
-    with col2:
-        coding_eff = st.selectbox("Coding Efficiency", ["low", "intermediate", "high"])
-        math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"])
-        problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"])
+    name = st.text_input("Name")
+    age = st.number_input("Age", min_value=1, max_value=100)
+    email = st.text_input("Email")
+    mobile_number = st.text_input("Mobile Number")
+    coding_eff = st.selectbox("Coding Efficiency", ["low", "intermediate", "high"])
+    math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"])
+    problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"])
 
     # Multiselect with a maximum of 10 subjects
     selected_subjects = st.multiselect(
@@ -175,118 +173,40 @@ def dashboard():
         conn.close()
 
         if student:
-            # Custom CSS for the dashboard
-            st.markdown("""
-                <style>
-                .stHeadingContainer h1 {
-                    background-color: #4CAF50;
-                    color: white;
-                    padding: 10px;
-                    border-radius: 5px;
-                    text-align: center;
-                }
-                .stButton button {
-                    background-color: #4CAF50;
-                    color: white;
-                    padding: 10px 20px;
-                    border: none;
-                    border-radius: 5px;
-                    cursor: pointer;
-                    width: 100%;
-                    font-size: 16px;
-                }
-                .stButton button:hover {
-                    background-color: #45a049;
-                }
-                .stTextInput input {
-                    border-radius: 5px;
-                    border: 1px solid #ccc;
-                    padding: 8px;
-                    width: 100%;
-                }
-                .stSelectbox select {
-                    border-radius: 5px;
-                    border: 1px solid #ccc;
-                    padding: 8px;
-                    width: 100%;
-                }
-                .stNumberInput input {
-                    border-radius: 5px;
-                    border: 1px solid #ccc;
-                    padding: 8px;
-                    width: 100%;
-                }
-                .stMarkdown {
-                    background-color: #f9f9f9;
-                    padding: 15px;
-                    border-radius: 5px;
-                    border: 1px solid #ddd;
-                    margin-bottom: 10px;
-                }
-                .stMarkdown h3 {
-                    color: #4CAF50;
-                }
-                .stMarkdown p {
-                    color: #333;
-                }
-                .stColumns {
-                    margin-bottom: 20px;
-                }
-                .stColumns > div {
-                    background-color: #f9f9f9;
-                    padding: 15px;
-                    border-radius: 5px;
-                    border: 1px solid #ddd;
-                }
-                </style>
-            """, unsafe_allow_html=True)
+            st.write("### Student Information")
+            st.write(f"**Name:** {student[0]}")
+            st.write(f"**Age:** {student[1]}")
+            st.write(f"**Email:** {student[2]}")
+            st.write(f"**Mobile Number:** {student[3]}")
+            st.write(f"**Coding Efficiency:** {student[4]}")
+            st.write(f"**Math Efficiency:** {student[5]}")
+            st.write(f"**Problem Solving Efficiency:** {student[6]}")
+            st.write(f"**Study Time Per Week:** {student[8]} hours")
 
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.write("### Student Information")
-                st.write(f"**Name:** {student[0]}")
-                st.write(f"**Age:** {student[1]}")
-                st.write(f"**Email:** {student[2]}")
-                st.write(f"**Mobile Number:** {student[3]}")
-                st.write(f"**Coding Efficiency:** {student[4]}")
-                st.write(f"**Math Efficiency:** {student[5]}")
-                st.write(f"**Problem Solving Efficiency:** {student[6]}")
-                st.write(f"**Study Time Per Week:** {student[8]} hours")
+            st.write("### Study Time Allocation")
+            selected_subjects = student[7].split(", ")
+            study_time = student[8]
+            coding_eff = student[4]
+            problem_solving_eff = student[6]
+            study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
 
-            with col2:
-                st.write("### Study Time Allocation")
-                selected_subjects = student[7].split(", ")
-                study_time = student[8]
-                coding_eff = student[4]
-                problem_solving_eff = student[6]
-                study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
-
-                for subject, hours in study_allocation.items():
-                    st.write(f"- **{subject}:** {hours} hours/week")
+            for subject, hours in study_allocation.items():
+                st.write(f"- **{subject}:** {hours} hours/week")
 
             # Add Predict Future Score, Quiz Section, and Generate Content buttons
             st.markdown("---")
-            col3, col4, col5 = st.columns(3)
-            with col3:
-                if st.button("Predict Future Score 🎯"):
-                    st.write("🚧 Feature under construction!")  # Placeholder
-            with col4:
-                if st.button("Take a Quiz 📝"):
-                    st.session_state["page"] = "Quiz"
-                    st.rerun()
-            with col5:
-                if st.button("Generate Study Content 📚"):
-                    content = generate_content(selected_subjects)
-                    st.write("### Generated Study Content")
-                    st.write(content)
+            if st.button("Take a Quiz 📝"):
+                st.session_state["page"] = "Quiz"
+                st.rerun()
+            if st.button("Generate Study Content 📚"):
+                content = generate_content(selected_subjects)
+                st.write("### Generated Study Content")
+                st.write(content)
 
         else:
             st.warning("No records found for the logged-in user.")
     except Exception as e:
         st.error(f"❌ Error loading dashboard: {e}")
-
-
 
 def quiz_section():
     st.header("Quiz Section")
@@ -295,6 +215,7 @@ def quiz_section():
     try:
         with open('questions.pkl', 'rb') as f:
             data = pickle.load(f)
+        st.write("Questions loaded successfully!")  # Debug statement
     except FileNotFoundError:
         st.error("The questions file was not found. Please ensure 'questions.pkl' is in the correct directory.")
         return
