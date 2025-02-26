@@ -167,6 +167,17 @@ def dashboard():
             col1, col2 = st.columns(2)
             
             with col1:
+                st.markdown("""
+                    <style>
+                    .stHeadingContainer h1 {
+                        background-color: #4CAF50;
+                        color: white;
+                        padding: 10px;
+                        border-radius: 5px;
+                        text-align: center;
+                    }
+                    </style>
+                """, unsafe_allow_html=True)
                 st.write("### Student Information")
                 st.write(f"**Name:** {student[0]}")
                 st.write(f"**Age:** {student[1]}")
@@ -196,7 +207,8 @@ def dashboard():
                     st.write("🚧 Feature under construction!")  # Placeholder
             with col4:
                 if st.button("Take a Quiz 📝"):
-                    st.write("🚧 Feature under construction!")  # Placeholder
+                    st.session_state["page"] = "Quiz"
+                    st.rerun()
 
             # Add some styling
             st.markdown("""
@@ -220,6 +232,43 @@ def dashboard():
     except Exception as e:
         st.error(f"❌ Error loading dashboard: {e}")
 
+def quiz_section():
+    st.header("Quiz Section")
+
+    st.markdown("""
+        <style>
+        .stHeadingContainer h1 {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    st.write("### Quiz 1: Data Structures")
+    st.write("**Question 1:** What is a binary tree?")
+    answer1 = st.text_input("Your Answer", key="q1")
+    if st.button("Submit Answer 1"):
+        if answer1:
+            st.success("Your answer has been submitted!")
+        else:
+            st.error("Please enter an answer.")
+
+    st.write("### Quiz 2: Operating Systems")
+    st.write("**Question 2:** What is a deadlock?")
+    answer2 = st.text_input("Your Answer", key="q2")
+    if st.button("Submit Answer 2"):
+        if answer2:
+            st.success("Your answer has been submitted!")
+        else:
+            st.error("Please enter an answer.")
+
+    if st.button("Back to Dashboard"):
+        st.session_state["page"] = "Dashboard"
+        st.rerun()
+
 def main():
     if "page" not in st.session_state:
         st.session_state["page"] = "Student Info"
@@ -228,6 +277,8 @@ def main():
         student_info()
     elif st.session_state["page"] == "Dashboard":
         dashboard()
+    elif st.session_state["page"] == "Quiz":
+        quiz_section()
 
 if __name__ == "__main__":
     main()
