@@ -55,12 +55,18 @@ def student_info():
             conn = get_db_connection()
             cur = conn.cursor()
             try:
+                # Convert subjects list to a string
+                subjects_str = ", ".join(selected_subjects)
+
+                # Check what is being captured before insertion
+                st.write(f"Captured data: {name}, {age}, {email}, {mobile_number}, {coding_eff}, {math_eff}, {problem_solving_eff}, {subjects_str}, {study_time}")
+
                 cur.execute(
                     sql.SQL("""
                         INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """),
-                    (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, selected_subjects, study_time)
+                    (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, subjects_str, study_time)
                 )
                 conn.commit()
                 st.success("Student information saved successfully!")
@@ -69,6 +75,25 @@ def student_info():
             finally:
                 cur.close()
                 conn.close()
+
+    # Dashboard (Example: Show student entries)
+    st.header("Student Dashboard")
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT name, age, email, mobile_number FROM students ORDER BY id DESC LIMIT 10;")
+        students = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        if students:
+            st.write("### Recent Students:")
+            for student in students:
+                st.write(f"**{student[0]}**, Age: {student[1]}, Email: {student[2]}, Mobile: {student[3]}")
+        else:
+            st.write("No student data available.")
+    except Exception as e:
+        st.error(f"Error loading dashboard: {e}")
 
 if __name__ == "__main__":
     student_info()
