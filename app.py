@@ -9,59 +9,59 @@ DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-poole
 def get_db_connection():
     return psycopg2.connect(DB_URL)
 
-# Predefined subject ratings (updated with new subjects)
+# Predefined subject ratings (updated with shorter subject names)
 subject_ratings = {
-    # Existing subjects
-    "Data Structures and Algorithms": 10,
+    # Computer Science
+    "Data Structures": 10,
     "Operating Systems": 9,
-    "Database Management Systems (DBMS)": 9,
+    "DBMS": 9,
     "Computer Networks": 8,
-    "Software Engineering": 7,
+    "Software Engg": 7,
     "Python": 10,
-    "Object-Oriented Programming (Java/C/C++)": 10,
-    "Web Technologies": 7,
+    "OOP (Java/C++)": 10,
+    "Web Tech": 7,
     "Theory of Computation": 8,
     "Compiler Design": 7,
-    "Artificial Intelligence": 9,
+    "AI": 9,
     "Machine Learning": 9,
     "Cloud Computing": 8,
     "Cybersecurity": 8,
     "Distributed Systems": 7,
     "Deep Learning": 9,
     "Data Mining": 9,
-    "Big Data Analytics": 9,
-    "Natural Language Processing": 9,
+    "Big Data": 9,
+    "NLP": 9,
     "Reinforcement Learning": 9,
-    "Data Visualization": 8,
+    "Data Viz": 8,
     "Business Intelligence": 8,
     "Neural Networks": 9,
     "Computer Vision": 9,
     "Pattern Recognition": 8,
-    "Business Strategy and Analytics": 9,
-    "Financial and Management Accounting": 8,
-    "Business Process Management": 8,
+    "Business Strategy": 9,
+    "Financial Accounting": 8,
+    "Process Management": 8,
     "Enterprise Systems": 8,
-    # New subjects (Electrical and Electronics Engineering)
+    # Electrical Engineering
     "Electrical Machines": 10,
     "Power Systems": 9,
     "Control Systems": 9,
-    "Electrical Circuit Analysis": 10,
+    "Circuit Analysis": 10,
     "Power Electronics": 9,
     "Analog Electronics": 8,
     "Digital Electronics": 8,
-    "Electromagnetic Field Theory": 7,
-    "Microprocessors and Microcontrollers": 8,
-    "Renewable Energy Systems": 7,
-    "Electrical Measurements and Instrumentation": 8,
-    # New subjects (Electronics and Communication Engineering)
-    "Analog and Digital Communication": 10,
-    "Signals and Systems": 9,
-    "Digital Signal Processing (DSP)": 9,
+    "EMF Theory": 7,
+    "Microprocessors": 8,
+    "Renewable Energy": 7,
+    "Measurements": 8,
+    # Electronics and Communication
+    "Analog & Digital Comm": 10,
+    "Signals & Systems": 9,
+    "DSP": 9,
     "VLSI Design": 9,
-    "Optical Communication": 7,
+    "Optical Comm": 7,
     "Embedded Systems": 9,
-    "Wireless Communication": 9,
-    "Antenna and Wave Propagation": 7,
+    "Wireless Comm": 9,
+    "Antenna Theory": 7,
 }
 
 def allocate_study_time(selected_subjects, total_hours, efficiency_level, problem_solving):
@@ -187,6 +187,34 @@ def dashboard():
 
                 for subject, hours in study_allocation.items():
                     st.write(f"- **{subject}:** {hours} hours/week")
+
+            # Add Predict Future Score and Quiz Section buttons
+            st.markdown("---")
+            col3, col4 = st.columns(2)
+            with col3:
+                if st.button("Predict Future Score 🎯"):
+                    st.write("🚧 Feature under construction!")  # Placeholder
+            with col4:
+                if st.button("Take a Quiz 📝"):
+                    st.write("🚧 Feature under construction!")  # Placeholder
+
+            # Add some styling
+            st.markdown("""
+                <style>
+                .stButton button {
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                }
+                .stButton button:hover {
+                    background-color: #45a049;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+
         else:
             st.warning("No records found for the logged-in user.")
     except Exception as e:
