@@ -7,6 +7,10 @@ DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-poole
 def get_db_connection():
     return psycopg2.connect(DB_URL)
 
+def home():
+    st.title("Welcome to the Student Performance Web Application")
+    st.write("Navigate to different sections using the sidebar.")
+
 def student_info():
     st.title("Student Performance Web Application")
     st.header("Student Information")
@@ -55,12 +59,7 @@ def student_info():
             conn = get_db_connection()
             cur = conn.cursor()
             try:
-                # Convert subjects list to a string
                 subjects_str = ", ".join(selected_subjects)
-
-                # Check what is being captured before insertion
-                st.write(f"Captured data: {name}, {age}, {email}, {mobile_number}, {coding_eff}, {math_eff}, {problem_solving_eff}, {subjects_str}, {study_time}")
-
                 cur.execute(
                     sql.SQL("""
                         INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week)
@@ -76,7 +75,7 @@ def student_info():
                 cur.close()
                 conn.close()
 
-    # Dashboard (Example: Show student entries)
+def dashboard():
     st.header("Student Dashboard")
     try:
         conn = get_db_connection()
@@ -95,5 +94,16 @@ def student_info():
     except Exception as e:
         st.error(f"Error loading dashboard: {e}")
 
+def main():
+    st.sidebar.title("Navigation")
+    selection = st.sidebar.radio("Go to", ["Home", "Student Info", "Dashboard"])
+    
+    if selection == "Home":
+        home()
+    elif selection == "Student Info":
+        student_info()
+    elif selection == "Dashboard":
+        dashboard()
+
 if __name__ == "__main__":
-    student_info()
+    main()
