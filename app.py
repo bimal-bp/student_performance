@@ -11,13 +11,13 @@ def get_db_connection():
 
 # Predefined subject ratings
 subject_ratings = {
-    "Data Structures and Algorithms": 10,
+    "DSA": 10,
     "Operating Systems": 9,
     "Database Management Systems (DBMS)": 9,
     "Computer Networks": 8,
     "Software Engineering": 7,
     "Python": 10,
-    "Object-Oriented Programming (Java/C/C++)": 10,
+    "Object-Oriented Programming ": 10,
     "Web Technologies": 7,
     "Theory of Computation": 8,
     "Compiler Design": 7,
