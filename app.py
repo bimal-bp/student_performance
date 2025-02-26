@@ -108,42 +108,50 @@ def student_info():
                 conn.close()
 
 def dashboard():
-    st.header("📊 Student Dashboard")
-    email_filter = st.text_input("Enter Email to Filter")
+    st.header("Student Dashboard")
 
-    if email_filter:
-        try:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute("SELECT name, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week FROM students WHERE email = %s", (email_filter,))
-            student = cur.fetchone()
-            cur.close()
-            conn.close()
+    # Assuming the logged-in user's email is stored in session state
+    if "email" not in st.session_state:
+        st.warning("Please log in to view your dashboard.")
+        return
 
-            if student:
-                st.write(f"**🧑 Name:** {student[0]}")
-                st.write(f"**📧 Email:** {student[1]}")
-                st.write(f"**📞 Mobile Number:** {student[2]}")
-                st.write(f"**💡 Coding Efficiency:** {student[3]}")
-                st.write(f"**🧮 Math Efficiency:** {student[4]}")
-                st.write(f"**🧠 Problem Solving Efficiency:** {student[5]}")
-                st.write(f"**📖 Selected Subjects:** {student[6]}")
-                st.write(f"**⏳ Study Time Per Week:** {student[7]} hours")
+    email = st.session_state["email"]
 
-                # Dynamically calculate study allocation
-                selected_subjects = student[6].split(", ")
-                study_time = student[7]
-                coding_eff = student[3]
-                problem_solving_eff = student[5]
-                study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week FROM students WHERE email = %s",
+            (email,),
+        )
+        student = cur.fetchone()
+        cur.close()
+        conn.close()
 
-                st.write("### 📌 Study Time Allocation:")
-                for subject, hours in study_allocation.items():
-                    st.write(f"✅ **{subject}:** {hours} hours/week")
-            else:
-                st.write("❌ No records found for this email.")
-        except Exception as e:
-            st.error(f"❌ Error loading dashboard: {e}")
+        if student:
+            st.write(f"Name: {student[0]}")
+            st.write(f"Age: {student[1]}")
+            st.write(f"Email: {student[2]}")
+            st.write(f"Mobile Number: {student[3]}")
+            st.write(f"Coding Efficiency: {student[4]}")
+            st.write(f"Math Efficiency: {student[5]}")
+            st.write(f"Problem Solving Efficiency: {student[6]}")
+            st.write(f"Study Time Per Week: {student[8]} hours")
+
+            # Dynamically calculate study allocation
+            selected_subjects = student[7].split(", ")
+            study_time = student[8]
+            coding_eff = student[4]
+            problem_solving_eff = student[6]
+            study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
+
+            st.write("Study Time Allocation:")
+            for subject, hours in study_allocation.items():
+                st.write(f"{subject}: {hours} hours/week")
+        else:
+            st.warning("No records found for the logged-in user.")
+    except Exception as e:
+        st.error(f"Error loading dashboard: {e}")
 
 def main():
     st.sidebar.title("🔍 Navigation")
