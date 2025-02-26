@@ -272,14 +272,17 @@ def quiz_section():
                 index=None if st.session_state['selected_answer'] is None else options.index(st.session_state['selected_answer'])
             )
 
-            # If the user selects an answer, automatically move to the next question
-            if user_answer is not None and user_answer != st.session_state['selected_answer']:
+            # Update the selected answer in session state
+            if user_answer is not None:
                 st.session_state['selected_answer'] = user_answer
+
+            # Automatically move to the next question when an answer is selected
+            if st.session_state['selected_answer'] is not None:
                 # Check if the selected answer is correct
-                if user_answer == question['answer']:
+                if st.session_state['selected_answer'] == question['answer']:
                     st.session_state['score'] += 1
                 # Store the user's answer
-                st.session_state['user_answers'].append(user_answer)
+                st.session_state['user_answers'].append(st.session_state['selected_answer'])
                 # Move to the next question
                 st.session_state['current_question'] += 1
                 st.session_state['selected_answer'] = None
