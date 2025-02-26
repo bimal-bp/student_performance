@@ -9,15 +9,16 @@ DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-poole
 def get_db_connection():
     return psycopg2.connect(DB_URL)
 
-# Predefined subject ratings
+# Predefined subject ratings (updated with new subjects)
 subject_ratings = {
-    "DSA": 10,
+    # Existing subjects
+    "Data Structures and Algorithms": 10,
     "Operating Systems": 9,
     "Database Management Systems (DBMS)": 9,
     "Computer Networks": 8,
     "Software Engineering": 7,
     "Python": 10,
-    "Object-Oriented Programming ": 10,
+    "Object-Oriented Programming (Java/C/C++)": 10,
     "Web Technologies": 7,
     "Theory of Computation": 8,
     "Compiler Design": 7,
@@ -39,7 +40,28 @@ subject_ratings = {
     "Business Strategy and Analytics": 9,
     "Financial and Management Accounting": 8,
     "Business Process Management": 8,
-    "Enterprise Systems": 8
+    "Enterprise Systems": 8,
+    # New subjects (Electrical and Electronics Engineering)
+    "Electrical Machines": 10,
+    "Power Systems": 9,
+    "Control Systems": 9,
+    "Electrical Circuit Analysis": 10,
+    "Power Electronics": 9,
+    "Analog Electronics": 8,
+    "Digital Electronics": 8,
+    "Electromagnetic Field Theory": 7,
+    "Microprocessors and Microcontrollers": 8,
+    "Renewable Energy Systems": 7,
+    "Electrical Measurements and Instrumentation": 8,
+    # New subjects (Electronics and Communication Engineering)
+    "Analog and Digital Communication": 10,
+    "Signals and Systems": 9,
+    "Digital Signal Processing (DSP)": 9,
+    "VLSI Design": 9,
+    "Optical Communication": 7,
+    "Embedded Systems": 9,
+    "Wireless Communication": 9,
+    "Antenna and Wave Propagation": 7,
 }
 
 def allocate_study_time(selected_subjects, total_hours, efficiency_level, problem_solving):
@@ -69,13 +91,26 @@ def student_info():
         math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"])
         problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"])
 
-    selected_subjects = st.multiselect("Select subjects", options=list(subject_ratings.keys()), default=[])
-    
+    # Multiselect with a maximum of 10 subjects
+    selected_subjects = st.multiselect(
+        "Select subjects (max 10)", 
+        options=list(subject_ratings.keys()), 
+        default=[],
+        key="subjects"
+    )
+
+    # Validate that no more than 10 subjects are selected
+    if len(selected_subjects) > 10:
+        st.error("You can select a maximum of 10 subjects.")
+        selected_subjects = selected_subjects[:10]  # Truncate to 10 subjects
+
     study_time = st.number_input("Total Study Time Per Week (hours)", min_value=1, max_value=168)
 
     if st.button("Save Information"):
         if not email:
             st.error("Please enter an email.")
+        elif len(selected_subjects) > 10:
+            st.error("Please select no more than 10 subjects.")
         else:
             conn = get_db_connection()
             cur = conn.cursor()
