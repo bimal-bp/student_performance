@@ -2,7 +2,6 @@ import streamlit as st
 import psycopg2
 from psycopg2 import sql
 import numpy as np
-import ast
 
 # Database Connection String
 DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
@@ -81,16 +80,14 @@ def student_info():
         if len(selected_subjects) > 10:
             st.error("⚠ Please select a maximum of 10 subjects.")
         else:
-            study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
-            
             conn = get_db_connection()
             cur = conn.cursor()
             try:
                 subjects_str = ", ".join(selected_subjects)
                 cur.execute(
                     sql.SQL("""
-                        INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week, study_allocation)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (email) DO UPDATE SET 
                         age = EXCLUDED.age, 
                         mobile_number = EXCLUDED.mobile_number,
@@ -98,10 +95,9 @@ def student_info():
                         math_efficiency = EXCLUDED.math_efficiency,
                         problem_solving_efficiency = EXCLUDED.problem_solving_efficiency,
                         selected_subjects = EXCLUDED.selected_subjects,
-                        study_time_per_week = EXCLUDED.study_time_per_week,
-                        study_allocation = EXCLUDED.study_allocation
+                        study_time_per_week = EXCLUDED.study_time_per_week
                     """),
-                    (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, subjects_str, study_time, str(study_allocation))
+                    (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, subjects_str, study_time)
                 )
                 conn.commit()
                 st.success("✅ Student information saved successfully!")
@@ -119,7 +115,7 @@ def dashboard():
         try:
             conn = get_db_connection()
             cur = conn.cursor()
-            cur.execute("SELECT name, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week, study_allocation FROM students WHERE email = %s", (email_filter,))
+            cur.execute("SELECT name, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week FROM students WHERE email = %s", (email_filter,))
             student = cur.fetchone()
             cur.close()
             conn.close()
@@ -134,7 +130,13 @@ def dashboard():
                 st.write(f"**📖 Selected Subjects:** {student[6]}")
                 st.write(f"**⏳ Study Time Per Week:** {student[7]} hours")
 
-                study_allocation = ast.literal_eval(student[8])
+                # Dynamically calculate study allocation
+                selected_subjects = student[6].split(", ")
+                study_time = student[7]
+                coding_eff = student[3]
+                problem_solving_eff = student[5]
+                study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
+
                 st.write("### 📌 Study Time Allocation:")
                 for subject, hours in study_allocation.items():
                     st.write(f"✅ **{subject}:** {hours} hours/week")
