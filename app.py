@@ -1,201 +1,146 @@
 import streamlit as st
-import pandas as pd
 import psycopg2
-import google.generativeai as genai
-import logging
-
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Gemini API Setup
-genai.configure(api_key="AIzaSyCNV_-fekzYdly2JoVBZ8wa-k3J-ZMbLbs")
+from psycopg2 import sql
+import numpy as np
 
 # Database connection
 DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
 
-# Function to create tables if they don't exist
-def create_tables():
-    try:
-        conn = psycopg2.connect(DB_URL)
-        cur = conn.cursor()
-        
-        # Student Table
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS students (
-                id SERIAL PRIMARY KEY,
-                name TEXT,
-                age INTEGER,
-                gender TEXT,
-                phone TEXT UNIQUE,
-                email TEXT UNIQUE,
-                coding TEXT,
-                mathematics TEXT,
-                problem_solving TEXT,
-                study_time INTEGER,
-                subjects TEXT
-            )
-        """)
+# Connect to the database
+def get_db_connection():
+    conn = psycopg2.connect(DB_URL)
+    return conn
 
-        # MCDM Table
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS mcdm_techniques (
-                id SERIAL PRIMARY KEY,
-                technique_name TEXT UNIQUE,
-                description TEXT
-            )
-        """)
+# AHP (Analytic Hierarchy Process) for time allocation
+def ahp_time_allocation(subjects, coding_eff, math_eff, problem_solving_eff, study_time):
+    # Define weights for efficiency levels
+    weights = {
+        'coding': coding_eff / 10,
+        'math': math_eff / 10,
+        'problem_solving': problem_solving_eff / 10
+    }
 
-        conn.commit()
-    except Exception as e:
-        logger.error(f"Error creating tables: {e}")
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+    # Normalize weights
+    total_weight = sum(weights.values())
+    normalized_weights = {k: v / total_weight for k, v in weights.items()}
 
-# Function to insert or update student data
-def insert_or_update_student(name, age, gender, phone, email, coding, math, problem_solving, study_time, subjects):
-    try:
-        conn = psycopg2.connect(DB_URL)
-        cur = conn.cursor()
-        subjects_str = ", ".join(subjects)  # Convert list to string
-        
-        cur.execute("""
-            INSERT INTO students (name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, subjects)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (phone) DO UPDATE SET
-            name = EXCLUDED.name, age = EXCLUDED.age, gender = EXCLUDED.gender, email = EXCLUDED.email,
-            coding = EXCLUDED.coding, mathematics = EXCLUDED.mathematics, problem_solving = EXCLUDED.problem_solving,
-            study_time = EXCLUDED.study_time, subjects = EXCLUDED.subjects
-        """, (name, age, gender, phone, email, coding, math, problem_solving, study_time, subjects_str))
+    # Assign time to subjects based on their ratings and weights
+    subject_ratings = {subject: rating for subject, rating in subjects}
+    total_rating = sum(subject_ratings.values())
+    time_allocation = {
+        subject: (rating / total_rating) * study_time * normalized_weights['coding']  # Example: prioritize coding
+        for subject, rating in subject_ratings.items()
+    }
 
-        conn.commit()
-        return True
-    except Exception as e:
-        logger.error(f"Error inserting/updating student data: {e}")
-        return False
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+    return time_allocation
 
-# Function to fetch student data
-def fetch_student(phone):
-    try:
-        conn = psycopg2.connect(DB_URL)
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM students WHERE phone = %s", (phone,))
-        student = cur.fetchone()
-        return student
-    except Exception as e:
-        logger.error(f"Error fetching student data: {e}")
-        return None
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
+# Login and Student Info Page
+def login_and_student_info():
+    st.title("Student Performance Web Application")
+    st.header("Login and Student Information")
 
-# Function to fetch all students
-def fetch_all_students():
-    try:
-        conn = psycopg2.connect(DB_URL)
-        cur = conn.cursor()
-        cur.execute("SELECT id, name, age, gender, phone, email, study_time FROM students")
-        students = cur.fetchall()
-        return students
-    except Exception as e:
-        logger.error(f"Error fetching students: {e}")
-        return []
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
-
-# Function to fetch MCDM techniques
-def fetch_mcdm_techniques():
-    try:
-        conn = psycopg2.connect(DB_URL)
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM mcdm_techniques")
-        techniques = cur.fetchall()
-        return techniques
-    except Exception as e:
-        logger.error(f"Error fetching MCDM techniques: {e}")
-        return []
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()
-
-# Function to generate AI-based quiz using Gemini API
-def generate_quiz(question):
-    try:
-        response = genai.chat(prompt=f"Create a multiple-choice quiz question with 4 options for {question}. Provide the correct answer.")
-        return response.text
-    except Exception as e:
-        logger.error(f"Error generating quiz: {e}")
-        return "Failed to generate quiz."
-
-# Create tables on startup
-create_tables()
-
-# Session Management
-if "page" not in st.session_state:
-    st.session_state["page"] = "login"
-
-if st.session_state["page"] == "login":
-    st.title("Student Login")
-
+    # Input fields
     name = st.text_input("Name")
-    age = st.number_input("Age", min_value=5, max_value=100, step=1)
-    gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-    phone = st.text_input("Phone Number")
+    age = st.number_input("Age", min_value=1, max_value=100)
     email = st.text_input("Email")
+    mobile_number = st.text_input("Mobile Number")
+    coding_eff = st.slider("Coding Efficiency (1-10)", 1, 10)
+    math_eff = st.slider("Math Efficiency (1-10)", 1, 10)
+    problem_solving_eff = st.slider("Problem Solving Efficiency (1-10)", 1, 10)
 
-    st.write("### Select Your Proficiencies")
-    coding = st.selectbox("Coding Proficiency", ["Beginner", "Intermediate", "Expert"])
-    mathematics = st.selectbox("Mathematics Proficiency", ["Beginner", "Intermediate", "Expert"])
-    problem_solving = st.selectbox("Problem Solving Proficiency", ["Beginner", "Intermediate", "Expert"])
-    study_time = st.slider("Study Time per Week (hrs)", 0, 50, 10)
+    # Subject selection
+    subjects = {
+        "Data Structures and Algorithms": 10,
+        "Operating Systems": 9,
+        "Database Management Systems (DBMS)": 9,
+        "Computer Networks": 8,
+        "Software Engineering": 7,
+        "Python": 10,
+        "Object-Oriented Programming (Java/C/C++)": 10,
+        "Web Technologies": 7,
+        "Theory of Computation": 8,
+        "Compiler Design": 7,
+        "Artificial Intelligence": 9,
+        "Machine Learning": 9,
+        "Cloud Computing": 8,
+        "Cybersecurity": 8,
+        "Distributed Systems": 7
+    }
+    selected_subjects = st.multiselect("Select 10 Subjects", list(subjects.keys()), default=list(subjects.keys())[:10])
 
-    subjects = ["Data Structures", "Operating Systems", "DBMS", "Python", "ML", "AI"]
-    selected_subjects = st.multiselect("Select Subjects", subjects, max_selections=10)
+    # Study time input
+    study_time = st.number_input("Study Time Per Week (hours)", min_value=1, max_value=168)
 
-    if st.button("Save Details"):
-        if insert_or_update_student(name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, selected_subjects):
-            st.success("Student data saved successfully!")
+    # Save to database
+    if st.button("Save Information"):
+        if len(selected_subjects) != 10:
+            st.error("Please select exactly 10 subjects.")
         else:
-            st.error("Failed to save student data.")
+            conn = get_db_connection()
+            cur = conn.cursor()
+            try:
+                cur.execute(
+                    sql.SQL("""
+                        INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """),
+                    (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, selected_subjects, study_time)
+                )
+                conn.commit()
+                st.success("Student information saved successfully!")
+            except Exception as e:
+                st.error(f"Error: {e}")
+            finally:
+                cur.close()
+                conn.close()
 
-    if st.button("Go to Dashboard") and phone:
-        student = fetch_student(phone)
-        if student:
-            st.session_state["student_phone"] = phone
-            st.session_state["page"] = "dashboard"
-        else:
-            st.error("No student found with the provided phone number.")
+# Dashboard Page
+def dashboard():
+    st.title("Dashboard")
+    st.header("Student Information and Time Allocation")
 
-elif st.session_state["page"] == "dashboard":
-    st.title("📊 Student Dashboard")
-    
-    students = fetch_all_students()
-    if students:
-        df = pd.DataFrame(students, columns=["ID", "Name", "Age", "Gender", "Phone", "Email", "Study Time"])
-        st.dataframe(df)
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM students")
+    students = cur.fetchall()
+    cur.close()
+    conn.close()
 
-    st.subheader("🔍 MCDM Techniques")
-    techniques = fetch_mcdm_techniques()
-    if techniques:
-        df_mcdm = pd.DataFrame(techniques, columns=["ID", "Technique", "Description"])
-        st.dataframe(df_mcdm)
-    else:
-        st.write("No MCDM techniques found.")
+    if not students:
+        st.warning("No student data found.")
+        return
 
-    if st.button("Back to Login"):
-        st.session_state["page"] = "login"
+    # Display student information
+    for student in students:
+        st.subheader(f"Student: {student[1]}")
+        st.write(f"Age: {student[2]}")
+        st.write(f"Email: {student[3]}")
+        st.write(f"Mobile Number: {student[4]}")
+        st.write(f"Coding Efficiency: {student[5]}/10")
+        st.write(f"Math Efficiency: {student[6]}/10")
+        st.write(f"Problem Solving Efficiency: {student[7]}/10")
+        st.write(f"Selected Subjects: {', '.join(student[8])}")
+        st.write(f"Study Time Per Week: {student[9]} hours")
+
+        # Calculate time allocation using AHP
+        subjects_with_ratings = {subject: subjects[subject] for subject in student[8]}
+        time_allocation = ahp_time_allocation(subjects_with_ratings, student[5], student[6], student[7], student[9])
+
+        st.subheader("Time Allocation for Subjects")
+        for subject, time in time_allocation.items():
+            st.write(f"{subject}: {round(time, 2)} hours")
+
+        st.write("---")
+
+# Main App
+def main():
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio("Go to", ["Login and Student Info", "Dashboard"])
+
+    if page == "Login and Student Info":
+        login_and_student_info()
+    elif page == "Dashboard":
+        dashboard()
+
+if __name__ == "__main__":
+    main()
