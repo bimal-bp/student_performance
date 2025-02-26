@@ -251,6 +251,8 @@ def quiz_section():
         st.session_state['user_answers'] = []
     if 'score' not in st.session_state:
         st.session_state['score'] = 0
+    if 'selected_answer' not in st.session_state:
+        st.session_state['selected_answer'] = None
 
     if not st.session_state['quiz_started']:
         if st.button("Start Quiz"):
@@ -263,10 +265,16 @@ def quiz_section():
             
             # Display options using st.radio
             options = question['options']
-            user_answer = st.radio("Select your answer:", options, key=f"q{st.session_state['current_question']}")
-            
-            # Submit button
-            if st.button("Submit Answer"):
+            user_answer = st.radio(
+                "Select your answer:",
+                options,
+                key=f"q{st.session_state['current_question']}",
+                index=None if st.session_state['selected_answer'] is None else options.index(st.session_state['selected_answer'])
+            )
+
+            # If the user selects an answer, automatically move to the next question
+            if user_answer is not None and user_answer != st.session_state['selected_answer']:
+                st.session_state['selected_answer'] = user_answer
                 # Check if the selected answer is correct
                 if user_answer == question['answer']:
                     st.session_state['score'] += 1
@@ -274,6 +282,7 @@ def quiz_section():
                 st.session_state['user_answers'].append(user_answer)
                 # Move to the next question
                 st.session_state['current_question'] += 1
+                st.session_state['selected_answer'] = None
                 st.rerun()  # Refresh the app to show the next question
         else:
             # Quiz ended
@@ -294,6 +303,7 @@ def quiz_section():
                 st.session_state['current_question'] = 0
                 st.session_state['user_answers'] = []
                 st.session_state['score'] = 0
+                st.session_state['selected_answer'] = None
                 st.rerun()
 
     # Back to Dashboard button
