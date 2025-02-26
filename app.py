@@ -8,7 +8,7 @@ import google.generativeai as genai
 DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
 
 # Gemini API Configuration
-GEMINI_API_KEY = "AIzaSyDcfCHQZvn0ivZ0GT-2X0tQ-lR6H-mzMzM"
+GEMINI_API_KEY = "AIzaSyDICIQ2Qq0k5yo91hdhWYQeXP__K__OfkU"
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.0-pro')  
 
