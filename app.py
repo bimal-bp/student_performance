@@ -7,10 +7,6 @@ DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-poole
 def get_db_connection():
     return psycopg2.connect(DB_URL)
 
-def home():
-    st.title("Welcome to the Student Performance Web Application")
-    st.write("Navigate to different sections using the sidebar.")
-
 def student_info():
     st.title("Student Performance Web Application")
     st.header("Student Information")
@@ -47,7 +43,8 @@ def student_info():
         "Select up to 10 subjects",
         options=subjects,
         default=[],
-        key="subject_selection"
+        key="subject_selection",
+        max_selections=10  # Limit to 10 subjects
     )
     
     study_time = st.number_input("Study Time Per Week (hours)", min_value=1, max_value=168)
@@ -75,7 +72,7 @@ def student_info():
                 conn.close()
 
 def dashboard():
-    st.header("Student Dashboard")
+    st.title("Student Dashboard")
     try:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -91,15 +88,13 @@ def dashboard():
                 st.write("Selected Subjects:")
                 for subject in student[5]:
                     st.write(f"- {subject}")
-                if st.button(f"Update {student[1]}", key=f"update_{student[0]}"):
-                    update_student(student[0])
         else:
             st.write("No student data available.")
     except Exception as e:
         st.error(f"Error loading dashboard: {e}")
 
 def update_student(student_id):
-    st.header("Update Student Information")
+    st.title("Update Student Information")
     
     conn = get_db_connection()
     cur = conn.cursor()
@@ -136,7 +131,8 @@ def update_student(student_id):
             "Select up to 10 subjects",
             options=subjects,
             default=student[8],
-            key=f"subject_selection_{student_id}"
+            key=f"subject_selection_{student_id}",
+            max_selections=10  # Limit to 10 subjects
         )
         
         study_time = st.number_input("Study Time Per Week (hours)", min_value=1, max_value=168, value=student[9])
@@ -166,14 +162,16 @@ def update_student(student_id):
 
 def main():
     st.sidebar.title("Navigation")
-    selection = st.sidebar.radio("Go to", ["Home", "Student Info", "Dashboard"])
+    selection = st.sidebar.radio("Go to", ["Student Info", "Dashboard", "Update Student"])
     
-    if selection == "Home":
-        home()
-    elif selection == "Student Info":
+    if selection == "Student Info":
         student_info()
     elif selection == "Dashboard":
         dashboard()
+    elif selection == "Update Student":
+        student_id = st.sidebar.number_input("Enter Student ID", min_value=1)
+        if student_id:
+            update_student(student_id)
 
 if __name__ == "__main__":
     main()
