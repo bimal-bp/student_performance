@@ -72,8 +72,10 @@ def insert_or_update_student(name, age, gender, phone, email, coding, math, prob
         """, (name, age, gender, phone, email, coding, math, problem_solving, study_time, subjects_str))
 
         conn.commit()
+        return True
     except Exception as e:
         logger.error(f"Error inserting/updating student data: {e}")
+        return False
     finally:
         if cur:
             cur.close()
@@ -166,12 +168,18 @@ if st.session_state["page"] == "login":
     selected_subjects = st.multiselect("Select Subjects", subjects, max_selections=10)
 
     if st.button("Save Details"):
-        insert_or_update_student(name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, selected_subjects)
-        st.success("Student data saved successfully!")
+        if insert_or_update_student(name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, selected_subjects):
+            st.success("Student data saved successfully!")
+        else:
+            st.error("Failed to save student data.")
 
     if st.button("Go to Dashboard") and phone:
-        st.session_state["student_phone"] = phone
-        st.session_state["page"] = "dashboard"
+        student = fetch_student(phone)
+        if student:
+            st.session_state["student_phone"] = phone
+            st.session_state["page"] = "dashboard"
+        else:
+            st.error("No student found with the provided phone number.")
 
 elif st.session_state["page"] == "dashboard":
     st.title("📊 Student Dashboard")
