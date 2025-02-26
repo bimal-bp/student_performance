@@ -14,11 +14,13 @@ genai.configure(api_key="AIzaSyCNV_-fekzYdly2JoVBZ8wa-k3J-ZMbLbs")
 # Database connection
 DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
 
-# Function to create table if it doesn't exist
-def create_table():
+# Function to create tables if they don't exist
+def create_tables():
     try:
         conn = psycopg2.connect(DB_URL)
         cur = conn.cursor()
+        
+        # Student Table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS students (
                 id SERIAL PRIMARY KEY,
@@ -31,12 +33,22 @@ def create_table():
                 mathematics TEXT,
                 problem_solving TEXT,
                 study_time INTEGER,
-                subjects TEXT[]
+                subjects TEXT
             )
         """)
+
+        # MCDM Table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mcdm_techniques (
+                id SERIAL PRIMARY KEY,
+                technique_name TEXT UNIQUE,
+                description TEXT
+            )
+        """)
+
         conn.commit()
     except Exception as e:
-        logger.error(f"Error creating table: {e}")
+        logger.error(f"Error creating tables: {e}")
     finally:
         if cur:
             cur.close()
@@ -48,11 +60,17 @@ def insert_student(name, age, gender, phone, email, coding, math, problem_solvin
     try:
         conn = psycopg2.connect(DB_URL)
         cur = conn.cursor()
+        subjects_str = ", ".join(subjects)  # Convert list to string
+        
         cur.execute("""
             INSERT INTO students (name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, subjects)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (phone, email) DO NOTHING
-        """, (name, age, gender, phone, email, coding, math, problem_solving, study_time, subjects))
+            ON CONFLICT (phone) DO UPDATE SET
+            name = EXCLUDED.name, age = EXCLUDED.age, gender = EXCLUDED.gender, email = EXCLUDED.email,
+            coding = EXCLUDED.coding, mathematics = EXCLUDED.mathematics, problem_solving = EXCLUDED.problem_solving,
+            study_time = EXCLUDED.study_time, subjects = EXCLUDED.subjects
+        """, (name, age, gender, phone, email, coding, math, problem_solving, study_time, subjects_str))
+
         conn.commit()
     except Exception as e:
         logger.error(f"Error inserting student data: {e}")
@@ -79,6 +97,40 @@ def fetch_student(phone):
         if conn:
             conn.close()
 
+# Function to fetch all students
+def fetch_all_students():
+    try:
+        conn = psycopg2.connect(DB_URL)
+        cur = conn.cursor()
+        cur.execute("SELECT id, name, age, gender, phone, email, study_time FROM students")
+        students = cur.fetchall()
+        return students
+    except Exception as e:
+        logger.error(f"Error fetching students: {e}")
+        return []
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
+# Function to fetch MCDM techniques
+def fetch_mcdm_techniques():
+    try:
+        conn = psycopg2.connect(DB_URL)
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM mcdm_techniques")
+        techniques = cur.fetchall()
+        return techniques
+    except Exception as e:
+        logger.error(f"Error fetching MCDM techniques: {e}")
+        return []
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
+
 # Function to generate AI-based quiz using Gemini API
 def generate_quiz(question):
     try:
@@ -88,8 +140,8 @@ def generate_quiz(question):
         logger.error(f"Error generating quiz: {e}")
         return "Failed to generate quiz."
 
-# Create the table initially
-create_table()
+# Create tables on startup
+create_tables()
 
 # Session Management
 if "page" not in st.session_state:
@@ -110,23 +162,12 @@ if st.session_state["page"] == "login":
     problem_solving = st.selectbox("Problem Solving Proficiency", ["Beginner", "Intermediate", "Expert"])
     study_time = st.slider("Study Time per Week (hrs)", 0, 50, 10)
 
-    subjects = [
-        "Data Structures", "Operating Systems", "DBMS", "Computer Networks",
-        "Software Engineering", "Python", "OOP (Java/C/C++)", "Web Tech",
-        "Theory of Computation", "Compiler Design", "AI", "ML", "Cloud Computing",
-        "Cybersecurity", "Distributed Systems", "Deep Learning", "Data Mining",
-        "Big Data", "NLP", "Reinforcement Learning", "Data Visualization", "Business Intelligence"
-    ]
-    selected_subjects = st.multiselect("Select 10 Subjects", subjects, max_selections=10)
+    subjects = ["Data Structures", "Operating Systems", "DBMS", "Python", "ML", "AI"]
+    selected_subjects = st.multiselect("Select Subjects", subjects, max_selections=10)
 
     if st.button("Save Details"):
-        existing_student = fetch_student(phone)
-        if existing_student:
-            insert_student(name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, selected_subjects)
-            st.success("Student data updated successfully!")
-        else:
-            insert_student(name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, selected_subjects)
-            st.success("Student data saved successfully!")
+        insert_student(name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, selected_subjects)
+        st.success("Student data saved successfully!")
 
     if st.button("Go to Dashboard") and phone:
         st.session_state["student_phone"] = phone
@@ -134,57 +175,19 @@ if st.session_state["page"] == "login":
 
 elif st.session_state["page"] == "dashboard":
     st.title("📊 Student Dashboard")
-    phone = st.session_state.get("student_phone", "")
-
-    student_info = fetch_student(phone)
-    if student_info:
-        _, name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, subjects = student_info
-        subjects = ", ".join(subjects)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.subheader("Student Info")
-            st.write(f"**Name:** {name}")
-            st.write(f"**Age:** {age}")
-            st.write(f"**Gender:** {gender}")
-            st.write(f"**Email:** {email}")
-            st.write(f"**Contact Number:** {phone}")
-            st.write(f"**Weekly Study Time:** {study_time} hrs")
-            st.write(f"**Coding Proficiency:** {coding}")
-            st.write(f"**Mathematics Proficiency:** {mathematics}")
-            st.write(f"**Problem Solving Proficiency:** {problem_solving}")
-
-        with col2:
-            st.subheader("📚 Subjects Selected")
-            for subject in subjects.split(", "):
-                if st.button(subject):
-                    st.write(f"**{subject} Content:**")
-                    st.write(f"Here is some study material for {subject}.")
     
-    st.subheader("📝 Quiz Section")
-    st.write("Test your knowledge with some quizzes!")
+    students = fetch_all_students()
+    if students:
+        df = pd.DataFrame(students, columns=["ID", "Name", "Age", "Gender", "Phone", "Email", "Study Time"])
+        st.dataframe(df)
 
-    quiz_questions = [
-        {"question": "What is the time complexity of binary search?", "options": ["O(n)", "O(log n)", "O(n log n)", "O(1)"], "answer": "O(log n)"},
-        {"question": "Which SQL command is used to retrieve data?", "options": ["INSERT", "UPDATE", "SELECT", "DELETE"], "answer": "SELECT"},
-        {"question": "What does HTTP stand for?", "options": ["Hypertext Transfer Protocol", "Hyper Transfer Process", "High Tech Protocol", "Hyper Transfer Path"], "answer": "Hypertext Transfer Protocol"},
-        {"question": "Which language is primarily used for Machine Learning?", "options": ["Java", "C++", "Python", "Ruby"], "answer": "Python"},
-        {"question": "Which data structure uses LIFO?", "options": ["Queue", "Stack", "Linked List", "Tree"], "answer": "Stack"}
-    ]
-
-    for q in quiz_questions:
-        st.write(f"**{q['question']}**")
-        user_answer = st.radio("", q["options"], key=q["question"])
-        if user_answer == q["answer"]:
-            st.success("✅ Correct!")
-        elif user_answer:
-            st.error("❌ Wrong answer!")
-
-    st.subheader("🔍 AI Quiz (Powered by Gemini)")
-    topic = st.text_input("Enter a topic for a quiz question:")
-    if st.button("Generate AI Quiz"):
-        ai_quiz = generate_quiz(topic)
-        st.write(ai_quiz)
+    st.subheader("🔍 MCDM Techniques")
+    techniques = fetch_mcdm_techniques()
+    if techniques:
+        df_mcdm = pd.DataFrame(techniques, columns=["ID", "Technique", "Description"])
+        st.dataframe(df_mcdm)
+    else:
+        st.write("No MCDM techniques found.")
 
     if st.button("Back to Login"):
         st.session_state["page"] = "login"
