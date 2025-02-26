@@ -45,14 +45,20 @@ def login_and_student_info():
     st.title("Student Performance Web Application")
     st.header("Login and Student Information")
 
-    # Input fields
-    name = st.text_input("Name")
-    age = st.number_input("Age", min_value=1, max_value=100)
-    email = st.text_input("Email")
-    mobile_number = st.text_input("Mobile Number")
-    coding_eff = st.selectbox("Coding Efficiency", ["low", "intermediate", "high"])
-    math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"])
-    problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"])
+    # Use columns to display input fields side by side
+    col1, col2 = st.columns(2)
+
+    with col1:
+        # Input fields
+        name = st.text_input("Name")
+        age = st.number_input("Age", min_value=1, max_value=100)
+        email = st.text_input("Email")
+        mobile_number = st.text_input("Mobile Number")
+
+    with col2:
+        coding_eff = st.selectbox("Coding Efficiency", ["low", "intermediate", "high"])
+        math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"])
+        problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"])
 
     # Subject selection
     subjects = {
@@ -119,22 +125,26 @@ def dashboard():
     # Display student information
     for student in students:
         st.subheader(f"Student: {student[1]}")
-        st.write(f"Age: {student[2]}")
-        st.write(f"Email: {student[3]}")
-        st.write(f"Mobile Number: {student[4]}")
-        st.write(f"Coding Efficiency: {student[5]}")
-        st.write(f"Math Efficiency: {student[6]}")
-        st.write(f"Problem Solving Efficiency: {student[7]}")
-        st.write(f"Selected Subjects: {', '.join(student[8])}")
-        st.write(f"Study Time Per Week: {student[9]} hours")
+        col1, col2 = st.columns(2)
 
-        # Calculate time allocation using AHP
-        subjects_with_ratings = {subject: subjects[subject] for subject in student[8]}
-        time_allocation = ahp_time_allocation(subjects_with_ratings, student[5], student[6], student[7], student[9])
+        with col1:
+            st.write(f"Age: {student[2]}")
+            st.write(f"Email: {student[3]}")
+            st.write(f"Mobile Number: {student[4]}")
+            st.write(f"Coding Efficiency: {student[5]}")
+            st.write(f"Math Efficiency: {student[6]}")
+            st.write(f"Problem Solving Efficiency: {student[7]}")
+            st.write(f"Selected Subjects: {', '.join(student[8])}")
+            st.write(f"Study Time Per Week: {student[9]} hours")
 
-        st.subheader("Time Allocation for Subjects")
-        for subject, time in time_allocation.items():
-            st.write(f"{subject}: {round(time, 2)} hours")
+        with col2:
+            # Calculate time allocation using AHP
+            subjects_with_ratings = {subject: subjects[subject] for subject in student[8]}
+            time_allocation = ahp_time_allocation(subjects_with_ratings, student[5], student[6], student[7], student[9])
+
+            st.subheader("Time Allocation for Subjects")
+            for subject, time in time_allocation.items():
+                st.write(f"{subject}: {round(time, 2)} hours")
 
         st.write("---")
 
