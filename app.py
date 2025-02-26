@@ -105,7 +105,7 @@ def student_info():
                 # Store email in session and redirect to the dashboard
                 st.session_state["email"] = email
                 st.session_state["page"] = "Dashboard"
-                st.experimental_rerun()
+                st.rerun()  # Updated from st.experimental_rerun()
 
             except Exception as e:
                 st.error(f"❌ Error: {e}")
