@@ -101,6 +101,11 @@ def student_info():
                 )
                 conn.commit()
                 st.success("✅ Student information saved successfully!")
+                
+                # Store email in session and navigate to dashboard
+                st.session_state["email"] = email
+                st.experimental_rerun()
+
             except Exception as e:
                 st.error(f"❌ Error: {e}")
             finally:
@@ -108,11 +113,11 @@ def student_info():
                 conn.close()
 
 def dashboard():
-    st.header("Student Dashboard")
+    st.header("📊 Student Dashboard")
 
-    # Assuming the logged-in user's email is stored in session state
+    # Ensure email is stored in session
     if "email" not in st.session_state:
-        st.warning("Please log in to view your dashboard.")
+        st.warning("⚠ Please log in to view your dashboard.")
         return
 
     email = st.session_state["email"]
@@ -129,29 +134,29 @@ def dashboard():
         conn.close()
 
         if student:
-            st.write(f"Name: {student[0]}")
-            st.write(f"Age: {student[1]}")
-            st.write(f"Email: {student[2]}")
-            st.write(f"Mobile Number: {student[3]}")
-            st.write(f"Coding Efficiency: {student[4]}")
-            st.write(f"Math Efficiency: {student[5]}")
-            st.write(f"Problem Solving Efficiency: {student[6]}")
-            st.write(f"Study Time Per Week: {student[8]} hours")
+            st.write(f"**Name:** {student[0]}")
+            st.write(f"**Age:** {student[1]}")
+            st.write(f"**Email:** {student[2]}")
+            st.write(f"**Mobile Number:** {student[3]}")
+            st.write(f"**Coding Efficiency:** {student[4]}")
+            st.write(f"**Math Efficiency:** {student[5]}")
+            st.write(f"**Problem Solving Efficiency:** {student[6]}")
+            st.write(f"**Study Time Per Week:** {student[8]} hours")
 
-            # Dynamically calculate study allocation
+            # Study time allocation
             selected_subjects = student[7].split(", ")
             study_time = student[8]
             coding_eff = student[4]
             problem_solving_eff = student[6]
             study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
 
-            st.write("Study Time Allocation:")
+            st.write("### 🕒 Study Time Allocation:")
             for subject, hours in study_allocation.items():
-                st.write(f"{subject}: {hours} hours/week")
+                st.write(f"📌 **{subject}:** {hours} hours/week")
         else:
-            st.warning("No records found for the logged-in user.")
+            st.warning("⚠ No records found for the logged-in user.")
     except Exception as e:
-        st.error(f"Error loading dashboard: {e}")
+        st.error(f"❌ Error loading dashboard: {e}")
 
 def main():
     st.sidebar.title("🔍 Navigation")
