@@ -101,9 +101,10 @@ def student_info():
                 )
                 conn.commit()
                 st.success("✅ Student information saved successfully!")
-                
-                # Store email in session and navigate to dashboard
+
+                # Store email in session and redirect to the dashboard
                 st.session_state["email"] = email
+                st.session_state["page"] = "Dashboard"
                 st.experimental_rerun()
 
             except Exception as e:
@@ -159,12 +160,12 @@ def dashboard():
         st.error(f"❌ Error loading dashboard: {e}")
 
 def main():
-    st.sidebar.title("🔍 Navigation")
-    selection = st.sidebar.radio("Go to", ["Student Info", "Dashboard"])
+    if "page" not in st.session_state:
+        st.session_state["page"] = "Student Info"
 
-    if selection == "Student Info":
+    if st.session_state["page"] == "Student Info":
         student_info()
-    elif selection == "Dashboard":
+    elif st.session_state["page"] == "Dashboard":
         dashboard()
 
 if __name__ == "__main__":
