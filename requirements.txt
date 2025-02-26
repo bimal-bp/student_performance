@@ -6,3 +6,5 @@ streamlit
 psycopg2-binary
 python-dotenv
 bcrypt
+psycopg2 
+google-generativeai
