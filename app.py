@@ -2,6 +2,11 @@ import streamlit as st
 import pandas as pd
 import psycopg2
 import google.generativeai as genai
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Gemini API Setup
 genai.configure(api_key="AIzaSyCNV_-fekzYdly2JoVBZ8wa-k3J-ZMbLbs")
@@ -11,54 +16,77 @@ DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-poole
 
 # Function to create table if it doesn't exist
 def create_table():
-    conn = psycopg2.connect(DB_URL)
-    cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS students (
-            id SERIAL PRIMARY KEY,
-            name TEXT,
-            age INTEGER,
-            gender TEXT,
-            phone TEXT UNIQUE,
-            email TEXT UNIQUE,
-            coding TEXT,
-            mathematics TEXT,
-            problem_solving TEXT,
-            study_time INTEGER,
-            subjects TEXT[]
-        )
-    """)
-    conn.commit()
-    cur.close()
-    conn.close()
+    try:
+        conn = psycopg2.connect(DB_URL)
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS students (
+                id SERIAL PRIMARY KEY,
+                name TEXT,
+                age INTEGER,
+                gender TEXT,
+                phone TEXT UNIQUE,
+                email TEXT UNIQUE,
+                coding TEXT,
+                mathematics TEXT,
+                problem_solving TEXT,
+                study_time INTEGER,
+                subjects TEXT[]
+            )
+        """)
+        conn.commit()
+    except Exception as e:
+        logger.error(f"Error creating table: {e}")
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 # Function to insert student data
 def insert_student(name, age, gender, phone, email, coding, math, problem_solving, study_time, subjects):
-    conn = psycopg2.connect(DB_URL)
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO students (name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, subjects)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT (phone, email) DO NOTHING
-    """, (name, age, gender, phone, email, coding, math, problem_solving, study_time, subjects))
-    conn.commit()
-    cur.close()
-    conn.close()
+    try:
+        conn = psycopg2.connect(DB_URL)
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO students (name, age, gender, phone, email, coding, mathematics, problem_solving, study_time, subjects)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (phone, email) DO NOTHING
+        """, (name, age, gender, phone, email, coding, math, problem_solving, study_time, subjects))
+        conn.commit()
+    except Exception as e:
+        logger.error(f"Error inserting student data: {e}")
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 # Function to fetch student data
 def fetch_student(phone):
-    conn = psycopg2.connect(DB_URL)
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM students WHERE phone = %s", (phone,))
-    student = cur.fetchone()
-    cur.close()
-    conn.close()
-    return student
+    try:
+        conn = psycopg2.connect(DB_URL)
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM students WHERE phone = %s", (phone,))
+        student = cur.fetchone()
+        return student
+    except Exception as e:
+        logger.error(f"Error fetching student data: {e}")
+        return None
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 # Function to generate AI-based quiz using Gemini API
 def generate_quiz(question):
-    response = genai.chat(prompt=f"Create a multiple-choice quiz question with 4 options for {question}. Provide the correct answer.")
-    return response.text
+    try:
+        response = genai.chat(prompt=f"Create a multiple-choice quiz question with 4 options for {question}. Provide the correct answer.")
+        return response.text
+    except Exception as e:
+        logger.error(f"Error generating quiz: {e}")
+        return "Failed to generate quiz."
 
 # Create the table initially
 create_table()
