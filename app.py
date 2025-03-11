@@ -59,54 +59,22 @@ def student_info():
         key="branch"
     )
 
-    # Branch-wise subjects
-    branch_subjects = {
-        "Computer Science": [
-            "Programming", "Data Structures & Algorithms", "Operating Systems", "Computer Networks",
-            "Database Management Systems", "Software Engineering", "Web Technologies", "Compiler Design",
-            "Object-Oriented Programming", "Cryptography & Network Security", "Software Testing",
-            "Data Mining & Data Warehousing", "Business Communication & Ethics", "Business Analytics",
-            "Digital Marketing"
-        ],
-        "Artificial Intelligence": [
-            "Artificial Intelligence", "Machine Learning", "Deep Learning", "Data Science & Analytics",
-            "Natural Language Processing", "Neural Networks", "Reinforcement Learning", "Computer Vision",
-            "Linear Algebra for ML", "Data Visualization", "Data Mining & Data Warehousing"
-        ],
-        "Electrical Engineering": [
-            "Circuit Theory", "Digital Logic Design", "Analog & Digital Electronics", "Signals & Systems",
-            "Microprocessors & Microcontrollers", "Communication Systems", "VLSI Design",
-            "Antennas & Wave Propagation", "Embedded Systems", "Optical Communication",
-            "IoT & Wireless Sensor Networks", "Electrical Circuits", "Control Systems", "Power Systems",
-            "Electrical Machines", "Power Electronics", "Digital Signal Processing", "High Voltage Engineering",
-            "Renewable Energy Systems", "Industrial Automation"
-        ],
-        "Mechanical Engineering": [
-            "Engineering Mechanics", "Strength of Materials", "Thermodynamics", "Fluid Mechanics",
-            "Manufacturing Processes", "Heat & Mass Transfer", "Machine Design", "Robotics", "CAD/CAM",
-            "Automotive Engineering", "Industrial Engineering"
-        ],
-        "Civil Engineering": [
-            "Structural Analysis", "Surveying", "Fluid Mechanics", "Geotechnical Engineering",
-            "Construction Materials", "Transportation Engineering", "Environmental Engineering",
-            "Hydrology & Water Resources", "Building Design & Architecture", "Earthquake Engineering"
-        ],
-        "Common Subjects": [
-            "Engineering Mathematics", "Engineering Physics", "Engineering Chemistry",
-            "Basic Electrical and Electronical Engineering", "Web Technologies", "Programming",
-            "Data Structures & Algorithms", "Operating Systems", "Computer Networks",
-            "Cryptography & Network Security", "Big Data Technologies", "Cloud Computing",
-            "Cyber Security", "Blockchain Technology", "IoT (Internet of Things)",
-            "Introduction to AI & ML", "Data Science & Analytics", "Probability & Statistics",
-            "Engineering Drawing", "Engineering Economics & Financial Management"
-        ]
-    }
+    # Common subjects for all branches
+    common_subjects = [
+        "Engineering Mathematics", "Engineering Physics", "Engineering Chemistry",
+        "Basic Electrical and Electronical Engineering", "Web Technologies", "Programming",
+        "Data Structures & Algorithms", "Operating Systems", "Computer Networks",
+        "Cryptography & Network Security", "Big Data Technologies", "Cloud Computing",
+        "Cyber Security", "Blockchain Technology", "IoT (Internet of Things)",
+        "Introduction to AI & ML", "Data Science & Analytics", "Probability & Statistics",
+        "Engineering Drawing", "Engineering Economics & Financial Management"
+    ]
 
     # Subject selection based on branch
     st.subheader("Select Subjects")
     selected_subjects = st.multiselect(
-        f"Select up to 10 subjects from {branch}",
-        options=branch_subjects[branch],
+        f"Select up to 10 subjects from Common Subjects",
+        options=common_subjects,
         default=[],
         key="subjects"
     )
@@ -145,8 +113,8 @@ def student_info():
                 cur.execute(
                     sql.SQL("""
                         INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, 
-                        problem_solving_efficiency, conceptual_understanding, time_management, selected_subjects, study_time_per_week)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        problem_solving_efficiency, conceptual_understanding, time_management, selected_subjects, study_time_per_week, branch)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (email) DO UPDATE SET 
                         name = EXCLUDED.name,
                         age = EXCLUDED.age, 
@@ -157,9 +125,10 @@ def student_info():
                         conceptual_understanding = EXCLUDED.conceptual_understanding,
                         time_management = EXCLUDED.time_management,
                         selected_subjects = EXCLUDED.selected_subjects,
-                        study_time_per_week = EXCLUDED.study_time_per_week
+                        study_time_per_week = EXCLUDED.study_time_per_week,
+                        branch = EXCLUDED.branch
                     """),
-                    (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, conceptual_understanding, time_management, subjects_str, study_time)
+                    (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, conceptual_understanding, time_management, subjects_str, study_time, branch)
                 )
                 conn.commit()
                 st.success("✅ Student information saved successfully!")
