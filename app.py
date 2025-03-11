@@ -52,8 +52,7 @@ def student_info():
             "Artificial Intelligence",
             "Electrical Engineering",
             "Mechanical Engineering",
-            "Civil Engineering",
-            "Common Subjects"
+            "Civil Engineering"
         ],
         key="branch"
     )
@@ -90,26 +89,16 @@ def student_info():
         "Civil Engineering": [
             "Structural Analysis", "Geotechnical Engineering", "Transportation Engineering",
             "Environmental Engineering", "Construction Management", "Hydrology"
-        ],
-        "Common Subjects": []
+        ]
     }
 
     # Combine common and branch-specific subjects
     all_subjects = common_subjects + branch_subjects[branch]
 
-    # Subject selection based on branch
-    st.subheader("Select Subjects")
-    selected_subjects = st.multiselect(
-        f"Select up to 10 subjects from {branch}",
-        options=all_subjects,
-        default=[],
-        key="subjects"
-    )
-
-    # Validate that no more than 10 subjects are selected
-    if len(selected_subjects) > 10:
-        st.error("You can select a maximum of 10 subjects.")
-        selected_subjects = selected_subjects[:10]  # Truncate to 10 subjects
+    # Display all subjects (read-only)
+    st.subheader("Your Subjects")
+    st.write(f"**Common Subjects:** {', '.join(common_subjects)}")
+    st.write(f"**{branch} Subjects:** {', '.join(branch_subjects[branch])}")
 
     # Efficiency levels
     st.subheader("Efficiency Levels")
@@ -130,13 +119,11 @@ def student_info():
     if st.button("Save Information"):
         if not email:
             st.error("Please enter an email.")
-        elif len(selected_subjects) > 10:
-            st.error("Please select no more than 10 subjects.")
         else:
             conn = get_db_connection()
             cur = conn.cursor()
             try:
-                subjects_str = ", ".join(selected_subjects)
+                subjects_str = ", ".join(all_subjects)  # Save all subjects (common + branch-specific)
                 cur.execute(
                     sql.SQL("""
                         INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, 
