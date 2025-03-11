@@ -17,7 +17,6 @@ model = genai.GenerativeModel('gemini-pro')
 def get_db_connection():
     return psycopg2.connect(DB_URL)
 
-
 def allocate_study_time(selected_subjects, total_hours, efficiency_level, problem_solving):
     ratings = np.array([subject_ratings[sub] for sub in selected_subjects])
     efficiency_factor = {"low": 0.8, "intermediate": 1.0, "high": 1.2}[efficiency_level]
@@ -70,11 +69,39 @@ def student_info():
         "Engineering Drawing", "Engineering Economics & Financial Management"
     ]
 
+    # Branch-specific subjects
+    branch_subjects = {
+        "Computer Science": [
+            "Advanced Programming", "Database Management Systems", "Software Engineering",
+            "Machine Learning", "Artificial Intelligence", "Computer Architecture"
+        ],
+        "Artificial Intelligence": [
+            "Deep Learning", "Natural Language Processing", "Computer Vision",
+            "Reinforcement Learning", "AI Ethics", "Robotics"
+        ],
+        "Electrical Engineering": [
+            "Circuit Theory", "Power Systems", "Control Systems",
+            "Signal Processing", "Microelectronics", "Renewable Energy Systems"
+        ],
+        "Mechanical Engineering": [
+            "Thermodynamics", "Fluid Mechanics", "Solid Mechanics",
+            "Manufacturing Processes", "Heat Transfer", "Machine Design"
+        ],
+        "Civil Engineering": [
+            "Structural Analysis", "Geotechnical Engineering", "Transportation Engineering",
+            "Environmental Engineering", "Construction Management", "Hydrology"
+        ],
+        "Common Subjects": []
+    }
+
+    # Combine common and branch-specific subjects
+    all_subjects = common_subjects + branch_subjects[branch]
+
     # Subject selection based on branch
     st.subheader("Select Subjects")
     selected_subjects = st.multiselect(
-        f"Select up to 10 subjects from Common Subjects",
-        options=common_subjects,
+        f"Select up to 10 subjects from {branch}",
+        options=all_subjects,
         default=[],
         key="subjects"
     )
@@ -140,6 +167,7 @@ def student_info():
             finally:
                 cur.close()
                 conn.close()
+
 def dashboard():
     st.header("Student Dashboard")
 
@@ -153,7 +181,7 @@ def dashboard():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute(
-            "SELECT name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week FROM students WHERE email = %s",
+            "SELECT name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week, branch FROM students WHERE email = %s",
             (email,),
         )
         student = cur.fetchone()
@@ -174,6 +202,7 @@ def dashboard():
                 st.write(f"**Math Efficiency:** {student[5]}")
                 st.write(f"**Problem Solving Efficiency:** {student[6]}")
                 st.write(f"**Study Time Per Week:** {student[8]} hours")
+                st.write(f"**Branch:** {student[9]}")
 
             with col2:
                 st.write("### Study Time Allocation")
@@ -304,6 +333,7 @@ def quiz_section():
     if st.button("Back to Dashboard"):
         st.session_state["page"] = "Dashboard"
         st.rerun()
+
 def main():
     if "page" not in st.session_state:
         st.session_state["page"] = "Student Info"
