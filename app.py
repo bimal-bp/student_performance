@@ -17,57 +17,6 @@ model = genai.GenerativeModel('gemini-pro')
 def get_db_connection():
     return psycopg2.connect(DB_URL)
 
-# Predefined subject ratings
-subject_ratings = {
-    "Data Structures": 10,
-    "Operating Systems": 9,
-    "DBMS": 9,
-    "Computer Networks": 8,
-    "Software Engg": 7,
-    "Python": 10,
-    "OOP (Java/C++)": 10,
-    "Web Tech": 7,
-    "Theory of Computation": 8,
-    "Compiler Design": 7,
-    "AI": 9,
-    "Machine Learning": 9,
-    "Cloud Computing": 8,
-    "Cybersecurity": 8,
-    "Distributed Systems": 7,
-    "Deep Learning": 9,
-    "Data Mining": 9,
-    "Big Data": 9,
-    "NLP": 9,
-    "Reinforcement Learning": 9,
-    "Data Viz": 8,
-    "Business Intelligence": 8,
-    "Neural Networks": 9,
-    "Computer Vision": 9,
-    "Pattern Recognition": 8,
-    "Business Strategy": 9,
-    "Financial Accounting": 8,
-    "Process Management": 8,
-    "Enterprise Systems": 8,
-    "Electrical Machines": 10,
-    "Power Systems": 9,
-    "Control Systems": 9,
-    "Circuit Analysis": 10,
-    "Power Electronics": 9,
-    "Analog Electronics": 8,
-    "Digital Electronics": 8,
-    "EMF Theory": 7,
-    "Microprocessors": 8,
-    "Renewable Energy": 7,
-    "Measurements": 8,
-    "Analog & Digital Comm": 10,
-    "Signals & Systems": 9,
-    "DSP": 9,
-    "VLSI Design": 9,
-    "Optical Comm": 7,
-    "Embedded Systems": 9,
-    "Wireless Comm": 9,
-    "Antenna Theory": 7,
-}
 
 def allocate_study_time(selected_subjects, total_hours, efficiency_level, problem_solving):
     ratings = np.array([subject_ratings[sub] for sub in selected_subjects])
@@ -89,18 +38,75 @@ def student_info():
     st.title("Learn Mate - Student Performance Application")
     st.header("Student Information")
 
+    # Student Information
     name = st.text_input("Name")
     age = st.number_input("Age", min_value=1, max_value=100)
     email = st.text_input("Email")
     mobile_number = st.text_input("Mobile Number")
-    coding_eff = st.selectbox("Coding Efficiency", ["low", "intermediate", "high"])
-    math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"])
-    problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"])
 
-    # Multiselect with a maximum of 10 subjects
+    # Branch-wise subject selection
+    st.subheader("Select Your Branch")
+    branch = st.selectbox(
+        "Choose your branch",
+        options=[
+            "Computer Science",
+            "Artificial Intelligence",
+            "Electrical Engineering",
+            "Mechanical Engineering",
+            "Civil Engineering",
+            "Common Subjects"
+        ],
+        key="branch"
+    )
+
+    # Branch-wise subjects
+    branch_subjects = {
+        "Computer Science": [
+            "Programming", "Data Structures & Algorithms", "Operating Systems", "Computer Networks",
+            "Database Management Systems", "Software Engineering", "Web Technologies", "Compiler Design",
+            "Object-Oriented Programming", "Cryptography & Network Security", "Software Testing",
+            "Data Mining & Data Warehousing", "Business Communication & Ethics", "Business Analytics",
+            "Digital Marketing"
+        ],
+        "Artificial Intelligence": [
+            "Artificial Intelligence", "Machine Learning", "Deep Learning", "Data Science & Analytics",
+            "Natural Language Processing", "Neural Networks", "Reinforcement Learning", "Computer Vision",
+            "Linear Algebra for ML", "Data Visualization", "Data Mining & Data Warehousing"
+        ],
+        "Electrical Engineering": [
+            "Circuit Theory", "Digital Logic Design", "Analog & Digital Electronics", "Signals & Systems",
+            "Microprocessors & Microcontrollers", "Communication Systems", "VLSI Design",
+            "Antennas & Wave Propagation", "Embedded Systems", "Optical Communication",
+            "IoT & Wireless Sensor Networks", "Electrical Circuits", "Control Systems", "Power Systems",
+            "Electrical Machines", "Power Electronics", "Digital Signal Processing", "High Voltage Engineering",
+            "Renewable Energy Systems", "Industrial Automation"
+        ],
+        "Mechanical Engineering": [
+            "Engineering Mechanics", "Strength of Materials", "Thermodynamics", "Fluid Mechanics",
+            "Manufacturing Processes", "Heat & Mass Transfer", "Machine Design", "Robotics", "CAD/CAM",
+            "Automotive Engineering", "Industrial Engineering"
+        ],
+        "Civil Engineering": [
+            "Structural Analysis", "Surveying", "Fluid Mechanics", "Geotechnical Engineering",
+            "Construction Materials", "Transportation Engineering", "Environmental Engineering",
+            "Hydrology & Water Resources", "Building Design & Architecture", "Earthquake Engineering"
+        ],
+        "Common Subjects": [
+            "Engineering Mathematics", "Engineering Physics", "Engineering Chemistry",
+            "Basic Electrical and Electronical Engineering", "Web Technologies", "Programming",
+            "Data Structures & Algorithms", "Operating Systems", "Computer Networks",
+            "Cryptography & Network Security", "Big Data Technologies", "Cloud Computing",
+            "Cyber Security", "Blockchain Technology", "IoT (Internet of Things)",
+            "Introduction to AI & ML", "Data Science & Analytics", "Probability & Statistics",
+            "Engineering Drawing", "Engineering Economics & Financial Management"
+        ]
+    }
+
+    # Subject selection based on branch
+    st.subheader("Select Subjects")
     selected_subjects = st.multiselect(
-        "Select subjects (max 10)", 
-        options=list(subject_ratings.keys()), 
+        f"Select up to 10 subjects from {branch}",
+        options=branch_subjects[branch],
         default=[],
         key="subjects"
     )
@@ -110,6 +116,20 @@ def student_info():
         st.error("You can select a maximum of 10 subjects.")
         selected_subjects = selected_subjects[:10]  # Truncate to 10 subjects
 
+    # Efficiency levels
+    st.subheader("Efficiency Levels")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        coding_eff = st.selectbox("Coding Efficiency", ["low", "intermediate", "high"])
+        math_eff = st.selectbox("Math Efficiency", ["low", "intermediate", "high"])
+
+    with col2:
+        problem_solving_eff = st.selectbox("Problem Solving Efficiency", ["low", "intermediate", "high"])
+        conceptual_understanding = st.selectbox("Conceptual Understanding", ["low", "intermediate", "high"])
+        time_management = st.selectbox("Time Management", ["low", "intermediate", "high"])
+
+    # Total study time
     study_time = st.number_input("Total Study Time Per Week (hours)", min_value=1, max_value=168)
 
     if st.button("Save Information"):
@@ -124,8 +144,9 @@ def student_info():
                 subjects_str = ", ".join(selected_subjects)
                 cur.execute(
                     sql.SQL("""
-                        INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, 
+                        problem_solving_efficiency, conceptual_understanding, time_management, selected_subjects, study_time_per_week)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (email) DO UPDATE SET 
                         name = EXCLUDED.name,
                         age = EXCLUDED.age, 
@@ -133,10 +154,12 @@ def student_info():
                         coding_efficiency = EXCLUDED.coding_efficiency,
                         math_efficiency = EXCLUDED.math_efficiency,
                         problem_solving_efficiency = EXCLUDED.problem_solving_efficiency,
+                        conceptual_understanding = EXCLUDED.conceptual_understanding,
+                        time_management = EXCLUDED.time_management,
                         selected_subjects = EXCLUDED.selected_subjects,
                         study_time_per_week = EXCLUDED.study_time_per_week
                     """),
-                    (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, subjects_str, study_time)
+                    (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, conceptual_understanding, time_management, subjects_str, study_time)
                 )
                 conn.commit()
                 st.success("✅ Student information saved successfully!")
@@ -148,7 +171,6 @@ def student_info():
             finally:
                 cur.close()
                 conn.close()
-
 def dashboard():
     st.header("Student Dashboard")
 
