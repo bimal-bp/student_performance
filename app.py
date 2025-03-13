@@ -158,7 +158,6 @@ def student_info():
             finally:
                 cur.close()
                 conn.close()
-
 def dashboard():
     st.header("Student Dashboard")
 
