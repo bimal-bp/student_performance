@@ -93,7 +93,7 @@ def student_info():
     }
 
     # Combine common and branch-specific subjects
-    all_subjects = common_subjects + branch_subjects[branch]
+    all_subjects = common_subjects + branch_subjects.get(branch, [])
 
     # Display all subjects in a dropdown
     st.subheader("Select Your Subjects")
