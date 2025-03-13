@@ -95,10 +95,14 @@ def student_info():
     # Combine common and branch-specific subjects
     all_subjects = common_subjects + branch_subjects[branch]
 
-    # Display all subjects (read-only)
-    st.subheader("Your Subjects")
-    st.write(f"**Common Subjects:** {', '.join(common_subjects)}")
-    st.write(f"**{branch} Subjects:** {', '.join(branch_subjects[branch])}")
+    # Display all subjects in a dropdown
+    st.subheader("Select Your Subjects")
+    selected_subjects = st.multiselect(
+        "Choose your subjects (select up to 10)",
+        options=all_subjects,
+        default=all_subjects[:10],  # Default to first 10 subjects
+        key="subjects"
+    )
 
     # Efficiency levels
     st.subheader("Efficiency Levels")
@@ -123,7 +127,7 @@ def student_info():
             conn = get_db_connection()
             cur = conn.cursor()
             try:
-                subjects_str = ", ".join(all_subjects)  # Save all subjects (common + branch-specific)
+                subjects_str = ", ".join(selected_subjects)  # Save selected subjects
                 cur.execute(
                     sql.SQL("""
                         INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, 
