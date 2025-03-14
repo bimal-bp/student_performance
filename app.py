@@ -68,11 +68,6 @@ def allocate_study_time(selected_subjects, total_hours, efficiency_level, proble
     allocated_times = np.round(normalized_weights * total_hours, 2)
     return dict(zip(selected_subjects, allocated_times))
 
-def generate_content(subjects):
-    prompt = f"Generate a detailed study guide for: {', '.join(subjects)}. Include key topics, resources, and tips."
-    response = model.generate_content(prompt)
-    return response.text
-
 def student_info():
     st.title("Learn Mate - Student Performance Application")
     st.header("Student Information")
@@ -206,10 +201,13 @@ def dashboard():
                     st.session_state["page"] = "Quiz"
                     st.rerun()
             with col5:
-                if st.button("Generate Study Content 📚"):
-                    content = generate_content(selected_subjects)
-                    st.write("### Generated Study Content")
-                    st.write(content)
+                if st.button("Ask Questions 🤖"):
+                    st.session_state["page"] = "Ask Questions"
+                    st.rerun()
+            with col5:
+                if st.button("Add Study Content 📚"):
+                    st.session_state["page"] = "Add Study Content"
+                    st.rerun()
         else:
             st.warning("No records found for the logged-in user.")
     except Exception as e:
@@ -276,6 +274,54 @@ def quiz_section():
         st.session_state["page"] = "Dashboard"
         st.rerun()
 
+def ask_questions():
+    st.header("Ask Questions 🤖")
+    st.write("You can ask any questions related to your subjects here.")
+
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    if prompt := st.chat_input("Ask a question"):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        response = model.generate_content(prompt)
+        with st.chat_message("assistant"):
+            st.markdown(response.text)
+        st.session_state.messages.append({"role": "assistant", "content": response.text})
+
+    if st.button("Back to Dashboard"):
+        st.session_state["page"] = "Dashboard"
+        st.rerun()
+
+def add_study_content():
+    st.header("Add Study Content 📚")
+    st.write("Add links to study materials here.")
+
+    if "study_links" not in st.session_state:
+        st.session_state.study_links = []
+
+    link = st.text_input("Enter a link to a study resource")
+    if st.button("Add Link"):
+        if link:
+            st.session_state.study_links.append(link)
+            st.success("Link added successfully!")
+        else:
+            st.error("Please enter a valid link.")
+
+    st.write("### Study Links")
+    for i, link in enumerate(st.session_state.study_links):
+        st.write(f"{i + 1}. {link}")
+
+    if st.button("Back to Dashboard"):
+        st.session_state["page"] = "Dashboard"
+        st.rerun()
+
 def main():
     if "page" not in st.session_state:
         st.session_state["page"] = "Student Info"
@@ -286,6 +332,10 @@ def main():
         dashboard()
     elif st.session_state["page"] == "Quiz":
         quiz_section()
+    elif st.session_state["page"] == "Ask Questions":
+        ask_questions()
+    elif st.session_state["page"] == "Add Study Content":
+        add_study_content()
 
 if __name__ == "__main__":
     main()
