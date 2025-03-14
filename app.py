@@ -16,7 +16,132 @@ model = genai.GenerativeModel('gemini-pro')
 
 def get_db_connection():
     return psycopg2.connect(DB_URL)
+import numpy as np
 
+# Subject importance ratings (example)
+subject_ratings = {
+    # Computer Science related
+    "Programming": 10,
+    "Data Structures & Algorithms": 10,
+    "Operating Systems": 9,
+    "Computer Networks": 9,
+    "Database Management Systems": 9,
+    "Software Engineering": 8,
+    "Web Technologies": 8,
+    "Compiler Design": 7,
+    "Object-Oriented Programming": 9,
+    "Cryptography & Network Security": 8,
+    "Software Testing": 7,
+    "Data Mining & Data Warehousing": 8,
+    "Business Communication & Ethics": 6,
+    "Business Analytics": 7,
+    "Digital Marketing": 7,
+
+    # Artificial Intelligence related
+    "Artificial Intelligence": 10,
+    "Machine Learning": 10,
+    "Deep Learning": 9,
+    "Data Science & Analytics": 9,
+    "Natural Language Processing": 8,
+    "Neural Networks": 9,
+    "Reinforcement Learning": 8,
+    "Computer Vision": 8,
+    "Linear Algebra for ML": 9,
+    "Data Visualization": 9,
+
+    # Electrical related
+    "Circuit Theory": 8,
+    "Digital Logic Design": 9,
+    "Analog & Digital Electronics": 9,
+    "Signals & Systems": 8,
+    "Microprocessors & Microcontrollers": 9,
+    "Communication Systems": 8,
+    "VLSI Design": 7,
+    "Antennas & Wave Propagation": 7,
+    "Embedded Systems": 9,
+    "Optical Communication": 7,
+    "IoT & Wireless Sensor Networks": 8,
+    "Electrical Circuits": 8,
+    "Control Systems": 9,
+    "Power Systems": 8,
+    "Electrical Machines": 8,
+    "Power Electronics": 9,
+    "Digital Signal Processing": 9,
+    "High Voltage Engineering": 7,
+    "Renewable Energy Systems": 8,
+    "Industrial Automation": 8,
+
+    # Mechanical Engineering
+    "Engineering Mechanics": 9,
+    "Strength of Materials": 9,
+    "Thermodynamics": 9,
+    "Fluid Mechanics": 8,
+    "Manufacturing Processes": 8,
+    "Heat & Mass Transfer": 9,
+    "Machine Design": 9,
+    "Robotics": 8,
+    "CAD/CAM": 9,
+    "Automotive Engineering": 7,
+    "Industrial Engineering": 8,
+
+    # Civil Engineering
+    "Structural Analysis": 9,
+    "Surveying": 8,
+    "Geotechnical Engineering": 9,
+    "Construction Materials": 8,
+    "Transportation Engineering": 8,
+    "Environmental Engineering": 8,
+    "Hydrology & Water Resources": 7,
+    "Building Design & Architecture": 8,
+    "Earthquake Engineering": 8,
+
+    # Common subjects
+    "Engineering Mathematics": 10,
+    "Engineering Physics": 8,
+    "Engineering Chemistry": 6,
+    "Basic Electrical and Electronical Engineering": 7,
+    "Big Data Technologies": 8,
+    "Cloud Computing": 8,
+    "Cyber Security": 8,
+    "Blockchain Technology": 7,
+    "IoT (Internet of Things)": 7,
+    "Introduction to AI & ML": 8,
+    "Probability & Statistics": 10,
+    "Engineering Drawing": 7,
+    "Engineering Economics & Financial Management": 6,
+}
+
+def allocate_study_time(selected_subjects, total_hours, efficiency_level, problem_solving):
+    """
+    Allocate study time based on subject ratings, efficiency level, and problem-solving skills.
+    
+    Args:
+        selected_subjects (list): List of selected subjects.
+        total_hours (int): Total study time available per week.
+        efficiency_level (str): Efficiency level ("low", "intermediate", "high").
+        problem_solving (str): Problem-solving skill level ("low", "intermediate", "high").
+    
+    Returns:
+        dict: Dictionary with subjects as keys and allocated study time as values.
+    """
+    # Convert efficiency and problem-solving levels to factors
+    efficiency_factor = {"low": 0.8, "intermediate": 1.0, "high": 1.2}[efficiency_level]
+    problem_solving_factor = {"low": 0.8, "intermediate": 1.0, "high": 1.2}[problem_solving]
+    
+    # Get ratings for selected subjects
+    ratings = np.array([subject_ratings.get(sub, 5) for sub in selected_subjects])  # Default rating: 5
+    
+    # Calculate weighted ratings
+    weighted_ratings = ratings * efficiency_factor * problem_solving_factor
+    
+    # Normalize weights to sum to 1
+    normalized_weights = weighted_ratings / np.sum(weighted_ratings)
+    
+    # Allocate study time based on normalized weights
+    allocated_times = np.round(normalized_weights * total_hours, 2)
+    
+    # Return as a dictionary
+    return dict(zip(selected_subjects, allocated_times))
 def allocate_study_time(selected_subjects, total_hours, efficiency_level, problem_solving):
     ratings = np.array([subject_ratings[sub] for sub in selected_subjects])
     efficiency_factor = {"low": 0.8, "intermediate": 1.0, "high": 1.2}[efficiency_level]
@@ -188,9 +313,6 @@ def dashboard():
                 st.write(f"**Age:** {student[1]}")
                 st.write(f"**Email:** {student[2]}")
                 st.write(f"**Mobile Number:** {student[3]}")
-                st.write(f"**Coding Efficiency:** {student[4]}")
-                st.write(f"**Math Efficiency:** {student[5]}")
-                st.write(f"**Problem Solving Efficiency:** {student[6]}")
                 st.write(f"**Study Time Per Week:** {student[8]} hours")
                 st.write(f"**Branch:** {student[9]}")
 
