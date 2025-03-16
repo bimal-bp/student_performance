@@ -195,7 +195,29 @@ def dashboard():
             col3, col4, col5 = st.columns(3)
             with col3:
                 if st.button("Predict Future Score 🎯"):
-                    st.write("🚧 Feature under construction!")
+                    # Collect input data for prediction
+                    age = student[1]
+                    study_time_weekly = student[8]
+                    absences = 0  # Assuming absences are not tracked in the database
+                    tutoring = 0  # Assuming tutoring is not tracked in the database
+                    extracurricular = 0  # Assuming extracurricular activities are not tracked in the database
+                    sports = 0  # Assuming sports participation is not tracked in the database
+                    music = 0  # Assuming music participation is not tracked in the database
+                    volunteering = 0  # Assuming volunteering is not tracked in the database
+
+                    # Prepare input data for the model
+                    user_data = [age, study_time_weekly, absences, tutoring, extracurricular, sports, music, volunteering]
+
+                    # Load the trained model
+                    with open('model.pkl', 'rb') as file:
+                        model = pickle.load(file)
+
+                    # Make a prediction
+                    predicted_grade = model.predict([user_data])
+
+                    # Display the result
+                    st.write(f"**Predicted Grade:** {predicted_grade[0]}")
+
             with col4:
                 if st.button("Take a Quiz 📝"):
                     st.session_state["page"] = "Quiz"
