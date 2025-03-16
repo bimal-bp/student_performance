@@ -315,7 +315,7 @@ def quiz_section():
         st.rerun()
 
 def add_study_content():
-    st.write("study materials here.")
+    st.header("Study Materials")
 
     # Define the study content links for each subject
     study_content_links = {
