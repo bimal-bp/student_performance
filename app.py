@@ -195,29 +195,8 @@ def dashboard():
             col3, col4, col5 = st.columns(3)
             with col3:
                 if st.button("Predict Future Score 🎯"):
-                    # Collect input data for prediction
-                    age = student[1]
-                    study_time_weekly = student[8]
-                    absences = 0  # Assuming absences are not tracked in the database
-                    tutoring = 0  # Assuming tutoring is not tracked in the database
-                    extracurricular = 0  # Assuming extracurricular activities are not tracked in the database
-                    sports = 0  # Assuming sports participation is not tracked in the database
-                    music = 0  # Assuming music participation is not tracked in the database
-                    volunteering = 0  # Assuming volunteering is not tracked in the database
-
-                    # Prepare input data for the model
-                    user_data = [age, study_time_weekly, absences, tutoring, extracurricular, sports, music, volunteering]
-
-                    # Load the trained model
-                    with open('model (6).pkl', 'rb') as file:
-                        model = pickle.load(file)
-
-                    # Make a prediction
-                    predicted_grade = model.predict([user_data])
-
-                    # Display the result
-                    st.write(f"**Predicted Grade:** {predicted_grade[0]}")
-
+                    st.session_state["page"] = "Predict Future Score"
+                    st.rerun()
             with col4:
                 if st.button("Take a Quiz 📝"):
                     st.session_state["page"] = "Quiz"
@@ -234,6 +213,51 @@ def dashboard():
             st.warning("No records found for the logged-in user.")
     except Exception as e:
         st.error(f"❌ Error loading dashboard: {e}")
+
+def predict_future_score():
+    st.header("Predict Future Score 🎯")
+    st.write("Please provide additional details to predict your future score.")
+
+    age = st.number_input("Age", min_value=1, max_value=100, value=st.session_state.get("age", 20))
+    study_time_weekly = st.number_input("Study Time Per Week (hours)", min_value=1, max_value=168, value=st.session_state.get("study_time_per_week", 20))
+    absences = st.number_input("Number of Absences", min_value=0, max_value=100, value=0)
+    tutoring = st.selectbox("Do you receive tutoring?", ["No", "Yes"])
+    extracurricular = st.selectbox("Do you participate in extracurricular activities?", ["No", "Yes"])
+    sports = st.selectbox("Do you participate in sports?", ["No", "Yes"])
+    music = st.selectbox("Do you participate in music activities?", ["No", "Yes"])
+    volunteering = st.selectbox("Do you volunteer?", ["No", "Yes"])
+
+    if st.button("Predict Grade"):
+        # Prepare input data for the model
+        tutoring = 1 if tutoring == "Yes" else 0
+        extracurricular = 1 if extracurricular == "Yes" else 0
+        sports = 1 if sports == "Yes" else 0
+        music = 1 if music == "Yes" else 0
+        volunteering = 1 if volunteering == "Yes" else 0
+
+        user_data = [age, study_time_weekly, absences, tutoring, extracurricular, sports, music, volunteering]
+
+        # Load the trained model
+        with open('model (6).pkl', 'rb') as file:
+            model = pickle.load(file)
+
+        # Make a prediction
+        predicted_grade = model.predict([user_data])
+
+        # Display the result
+        st.write(f"**Predicted Grade:** {predicted_grade[0]}")
+
+        # Provide suggestions based on the predicted grade
+        if predicted_grade[0] >= 90:
+            st.success("You are doing great! Keep up the good work.")
+        elif predicted_grade[0] >= 80:
+            st.warning("You are doing well, but there is room for improvement. Consider increasing your study time or seeking tutoring.")
+        else:
+            st.error("You may need to make significant changes to improve your performance. Consider seeking tutoring, reducing absences, and increasing study time.")
+
+    if st.button("Back to Dashboard"):
+        st.session_state["page"] = "Dashboard"
+        st.rerun()
 
 def quiz_section():
     st.header("Quiz Section")
@@ -358,6 +382,8 @@ def main():
         ask_questions()
     elif st.session_state["page"] == "Add Study Content":
         add_study_content()
+    elif st.session_state["page"] == "Predict Future Score":
+        predict_future_score()
 
 if __name__ == "__main__":
     main()
