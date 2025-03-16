@@ -2,13 +2,11 @@ import streamlit as st
 import psycopg2
 from psycopg2 import sql
 import numpy as np
-import google.generativeai as genai
 import pickle
 import random
 
 # Database Connection String
 DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
-
 
 def get_db_connection():
     return psycopg2.connect(DB_URL)
@@ -281,14 +279,18 @@ def quiz_section():
             question = selected_questions[st.session_state['current_question']]
             st.write(f"**Question {st.session_state['current_question'] + 1}:** {question['question']}")
             user_answer = st.radio("Select your answer:", question['options'], key=f"q{st.session_state['current_question']}", index=None)
-            if user_answer is not None:
-                st.session_state['selected_answer'] = user_answer
-                if user_answer == question['answer']:
-                    st.session_state['score'] += 1
-                st.session_state['user_answers'].append(user_answer)
-                st.session_state['current_question'] += 1
-                st.session_state['selected_answer'] = None
-                st.rerun()
+            
+            if st.button("Submit Answer"):
+                if user_answer is not None:
+                    st.session_state['selected_answer'] = user_answer
+                    if user_answer == question['answer']:
+                        st.session_state['score'] += 1
+                    st.session_state['user_answers'].append(user_answer)
+                    st.session_state['current_question'] += 1
+                    st.session_state['selected_answer'] = None
+                    st.rerun()
+                else:
+                    st.warning("Please select an answer before submitting.")
         else:
             st.write("### Quiz Ended!")
             st.write(f"**Your Score:** {st.session_state['score']}/{len(selected_questions)}")
