@@ -209,7 +209,7 @@ def dashboard():
                     user_data = [age, study_time_weekly, absences, tutoring, extracurricular, sports, music, volunteering]
 
                     # Load the trained model
-                    with open('model.pkl', 'rb') as file:
+                    with open('model (6).pkl', 'rb') as file:
                         model = pickle.load(file)
 
                     # Make a prediction
