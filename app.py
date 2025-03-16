@@ -9,10 +9,6 @@ import random
 # Database Connection String
 DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
 
-# Gemini API Configuration
-GEMINI_API_KEY = "AIzaSyDWd-ZOM4dy5yLwconHJV6cVkNIoIbWC7g"
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.0-pro')
 
 def get_db_connection():
     return psycopg2.connect(DB_URL)
@@ -202,10 +198,6 @@ def dashboard():
                     st.session_state["page"] = "Quiz"
                     st.rerun()
             with col5:
-                if st.button("Ask Questions 🤖"):
-                    st.session_state["page"] = "Ask Questions"
-                    st.rerun()
-            with col5:
                 if st.button("Add Study Content 📚"):
                     st.session_state["page"] = "Add Study Content"
                     st.rerun()
@@ -320,53 +312,38 @@ def quiz_section():
         st.session_state["page"] = "Dashboard"
         st.rerun()
 
-def ask_questions():
-    st.header("Ask Questions 🤖")
-    st.write("You can ask any questions related to your subjects here.")
-
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-
-    if prompt := st.chat_input("Ask a question"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        try:
-            response = model.generate_content(prompt)
-            with st.chat_message("assistant"):
-                st.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-            st.error("Please check your API key and ensure the Generative AI API is enabled.")
-
-    if st.button("Back to Dashboard"):
-        st.session_state["page"] = "Dashboard"
-        st.rerun()
-
 def add_study_content():
     st.header("Add Study Content 📚")
     st.write("Add links to study materials here.")
 
-    if "study_links" not in st.session_state:
-        st.session_state.study_links = []
+    # Define the study content links for each subject
+    study_content_links = {
+        "Engineering Mathematics": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=ME564_Lecture_1",
+            "Online Course": "https://www.coursera.org/specializations/mathematics-for-engineers",
+            "Study Material": "https://nptel.ac.in/courses/111/105/111105080/"
+        },
+        "Engineering Physics": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Engineering_Physics_Introduction",
+            "Online Course": "https://ocw.mit.edu/courses/physics/8-01sc-physics-i-classical-mechanics-fall-2010/",
+            "Study Material": "https://nptel.ac.in/courses/115/106/115106005/"
+        },
+        "Programming": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Programming_Basics_Introduction",
+            "Online Course": "https://www.edx.org/course/introduction-to-computer-science",
+            "Study Material": "https://www.coursera.org/learn/python"
+        },
+        # Add more subjects and their links here...
+    }
 
-    link = st.text_input("Enter a link to a study resource")
-    if st.button("Add Link"):
-        if link:
-            st.session_state.study_links.append(link)
-            st.success("Link added successfully!")
-        else:
-            st.error("Please enter a valid link.")
+    # Dropdown to select a subject
+    selected_subject = st.selectbox("Select a subject", options=list(study_content_links.keys()))
 
-    st.write("### Study Links")
-    for i, link in enumerate(st.session_state.study_links):
-        st.write(f"{i + 1}. {link}")
+    # Display the links for the selected subject
+    if selected_subject:
+        st.write(f"### {selected_subject}")
+        for resource_type, link in study_content_links[selected_subject].items():
+            st.write(f"- **{resource_type}:** [{link}]({link})")
 
     if st.button("Back to Dashboard"):
         st.session_state["page"] = "Dashboard"
