@@ -249,7 +249,6 @@ def predict_future_score():
         st.session_state["page"] = "Dashboard"
         st.rerun()
 
-
 def quiz_section():
     st.header("Quiz Section")
     
@@ -261,7 +260,7 @@ def quiz_section():
         return
 
     # Allow the user to select a branch
-    branch = st.selectbox("Choose a branch for the quiz:", list(data.keys())
+    branch = st.selectbox("Choose a branch for the quiz:", list(data.keys()))
     
     if 'quiz_started' not in st.session_state:
         st.session_state.update({
@@ -277,7 +276,7 @@ def quiz_section():
         if st.button("Start Quiz"):
             st.session_state['quiz_started'] = True
             st.session_state['selected_branch'] = branch
-            st.session_state['selected_questions'] = random.sample(data[branch], min(30, len(data[branch]))  # Select up to 30 questions
+            st.session_state['selected_questions'] = random.sample(data[branch], min(30, len(data[branch])))  # Select up to 30 questions
 
     if st.session_state['quiz_started']:
         selected_questions = st.session_state['selected_questions']
@@ -320,9 +319,6 @@ def quiz_section():
     if st.button("Back to Dashboard"):
         st.session_state["page"] = "Dashboard"
         st.rerun()
-
-# Run the quiz section
-quiz_section()
 
 def add_study_content():
     st.header("Study Materials")
