@@ -249,8 +249,10 @@ def predict_future_score():
         st.session_state["page"] = "Dashboard"
         st.rerun()
 
+
 def quiz_section():
     st.header("Quiz Section")
+    
     try:
         with open('quiz_data.pkl', 'rb') as f:
             data = pickle.load(f)
@@ -258,23 +260,27 @@ def quiz_section():
         st.error("The questions file was not found. Please ensure 'quiz_data.pkl' is in the correct directory.")
         return
 
-    all_questions = [q for subject in data.values() for q in subject]
-    selected_questions = random.sample(all_questions, min(30, len(all_questions)))
-
+    # Allow the user to select a branch
+    branch = st.selectbox("Choose a branch for the quiz:", list(data.keys())
+    
     if 'quiz_started' not in st.session_state:
         st.session_state.update({
             'quiz_started': False,
             'current_question': 0,
             'user_answers': [],
             'score': 0,
-            'selected_answer': None
+            'selected_answer': None,
+            'selected_branch': None
         })
 
     if not st.session_state['quiz_started']:
         if st.button("Start Quiz"):
             st.session_state['quiz_started'] = True
+            st.session_state['selected_branch'] = branch
+            st.session_state['selected_questions'] = random.sample(data[branch], min(30, len(data[branch]))  # Select up to 30 questions
 
     if st.session_state['quiz_started']:
+        selected_questions = st.session_state['selected_questions']
         if st.session_state['current_question'] < len(selected_questions):
             question = selected_questions[st.session_state['current_question']]
             st.write(f"**Question {st.session_state['current_question'] + 1}:** {question['question']}")
@@ -283,7 +289,7 @@ def quiz_section():
             if st.button("Submit Answer"):
                 if user_answer is not None:
                     st.session_state['selected_answer'] = user_answer
-                    if user_answer == question['answer']:
+                    if user_answer[0] == question['answer']:  # Compare the first character (e.g., "A", "B")
                         st.session_state['score'] += 1
                     st.session_state['user_answers'].append(user_answer)
                     st.session_state['current_question'] += 1
@@ -306,13 +312,17 @@ def quiz_section():
                     'current_question': 0,
                     'user_answers': [],
                     'score': 0,
-                    'selected_answer': None
+                    'selected_answer': None,
+                    'selected_branch': None
                 })
                 st.rerun()
 
     if st.button("Back to Dashboard"):
         st.session_state["page"] = "Dashboard"
         st.rerun()
+
+# Run the quiz section
+quiz_section()
 
 def add_study_content():
     st.header("Study Materials")
