@@ -196,7 +196,7 @@ def dashboard():
                     st.session_state["page"] = "Quiz"
                     st.rerun()
             with col5:
-                if st.button(" Study Content 📚"):
+                if st.button("Study Content 📚"):
                     st.session_state["page"] = "Study Content"
                     st.rerun()
         else:
@@ -522,9 +522,7 @@ def main():
         dashboard()
     elif st.session_state["page"] == "Quiz":
         quiz_section()
-    elif st.session_state["page"] == "Ask Questions":
-        ask_questions()
-    elif st.session_state["page"] == "Add Study Content":
+    elif st.session_state["page"] == "Study Content":
         add_study_content()
     elif st.session_state["page"] == "Predict Future Score":
         predict_future_score()
