@@ -10,7 +10,7 @@ import random
 DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
 
 # Gemini API Configuration
-GEMINI_API_KEY = "AIzaSyDDx72uWkWWwYHxugzF7LqqgMA0XbrnSqU"
+GEMINI_API_KEY = "AIzaSyDWd-ZOM4dy5yLwconHJV6cVkNIoIbWC7g"
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-pro')
 
@@ -248,9 +248,9 @@ def predict_future_score():
         st.write(f"**Predicted Grade:** {predicted_grade[0]}")
 
         # Provide suggestions based on the predicted grade
-        if predicted_grade[0] >= 90:
+        if predicted_grade[0] == 1:
             st.success("You are doing great! Keep up the good work.")
-        elif predicted_grade[0] >= 80:
+        elif predicted_grade[0] == 2:
             st.warning("You are doing well, but there is room for improvement. Consider increasing your study time or seeking tutoring.")
         else:
             st.error("You may need to make significant changes to improve your performance. Consider seeking tutoring, reducing absences, and increasing study time.")
