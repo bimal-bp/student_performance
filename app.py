@@ -336,10 +336,14 @@ def ask_questions():
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        response = model.generate_content(prompt)
-        with st.chat_message("assistant"):
-            st.markdown(response.text)
-        st.session_state.messages.append({"role": "assistant", "content": response.text})
+        try:
+            response = model.generate_content(prompt)
+            with st.chat_message("assistant"):
+                st.markdown(response.text)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+            st.error("Please check your API key and ensure the Generative AI API is enabled.")
 
     if st.button("Back to Dashboard"):
         st.session_state["page"] = "Dashboard"
