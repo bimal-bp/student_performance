@@ -252,10 +252,10 @@ def predict_future_score():
 def quiz_section():
     st.header("Quiz Section")
     try:
-        with open('questions.pkl', 'rb') as f:
+        with open('quiz_data.pkl', 'rb') as f:
             data = pickle.load(f)
     except FileNotFoundError:
-        st.error("The questions file was not found. Please ensure 'questions.pkl' is in the correct directory.")
+        st.error("The questions file was not found. Please ensure 'quiz_data.pkl' is in the correct directory.")
         return
 
     all_questions = [q for subject in data.values() for q in subject]
