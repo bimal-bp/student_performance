@@ -54,14 +54,31 @@ subject_ratings = {
 }
 
 def allocate_study_time(selected_subjects, total_hours, efficiency_level, problem_solving):
+    # Define efficiency and problem-solving factors
     efficiency_factor = {"low": 0.8, "intermediate": 1.0, "high": 1.2}[efficiency_level]
     problem_solving_factor = {"low": 0.8, "intermediate": 1.0, "high": 1.2}[problem_solving]
+    
+    # Get ratings for selected subjects (default to 5 if not found)
     ratings = np.array([subject_ratings.get(sub, 5) for sub in selected_subjects])
+    
+    # Calculate weighted ratings
     weighted_ratings = ratings * efficiency_factor * problem_solving_factor
+    
+    # Normalize weights
     normalized_weights = weighted_ratings / np.sum(weighted_ratings)
-    allocated_times = np.round(normalized_weights * total_hours, 2)
-    return dict(zip(selected_subjects, allocated_times))
-
+    
+    # Allocate time in hours
+    allocated_times_hours = normalized_weights * total_hours
+    
+    # Convert decimal hours to hours and minutes
+    allocated_times = {}
+    for subject, time_hours in zip(selected_subjects, allocated_times_hours):
+        hours = int(time_hours)
+        minutes = int((time_hours - hours) * 60)
+        allocated_times[subject] = f"{hours}h {minutes}m"
+    
+    return allocated_times
+    
 def student_info():
     st.title("Learn Mate - Student Performance Application")
     st.header("Student Information")
@@ -88,13 +105,44 @@ def student_info():
         "Engineering Drawing"
     ]
 
-    branch_subjects = {
-        "Computer Science": ["Advanced Programming", "Database Management Systems", "Software Engineering", "Machine Learning", "Artificial Intelligence", "Computer Architecture"],
-        "Artificial Intelligence": ["Deep Learning", "Natural Language Processing", "Computer Vision", "Reinforcement Learning", "AI Ethics", "Robotics"],
-        "Electrical Engineering": ["Circuit Theory", "Power Systems", "Control Systems", "Signal Processing", "Microelectronics", "Renewable Energy Systems"],
-        "Mechanical Engineering": ["Thermodynamics", "Fluid Mechanics", "Solid Mechanics", "Manufacturing Processes", "Heat Transfer", "Machine Design"],
-        "Civil Engineering": ["Structural Analysis", "Geotechnical Engineering", "Transportation Engineering", "Environmental Engineering", "Construction Management", "Hydrology"]
-    }
+branch_subjects = {
+    "Computer Science": [
+        "Advanced Programming", "Database Management Systems", "Software Engineering",
+        "Machine Learning", "Artificial Intelligence", "Computer Architecture",
+        "Programming", "Data Structures & Algorithms", "Operating Systems",
+        "Computer Networks", "Web Technologies", "Compiler Design",
+        "Object-Oriented Programming", "Cryptography & Network Security",
+        "Software Testing", "Data Mining & Data Warehousing",
+        "Business Communication & Ethics", "Business Analytics", "Digital Marketing"
+    ],
+    "Artificial Intelligence": [
+        "Deep Learning", "Natural Language Processing", "Computer Vision",
+        "Reinforcement Learning", "AI Ethics", "Robotics", "Artificial Intelligence",
+        "Machine Learning", "Data Science & Analytics", "Neural Networks",
+        "Linear Algebra for ML", "Data Visualization"
+    ],
+    "Electrical Engineering": [
+        "Circuit Theory", "Power Systems", "Control Systems", "Signal Processing",
+        "Microelectronics", "Renewable Energy Systems", "Digital Logic Design",
+        "Analog & Digital Electronics", "Signals & Systems", "Microprocessors & Microcontrollers",
+        "Communication Systems", "VLSI Design", "Antennas & Wave Propagation",
+        "Embedded Systems", "Optical Communication", "IoT & Wireless Sensor Networks",
+        "Electrical Circuits", "Electrical Machines", "Power Electronics",
+        "Digital Signal Processing", "High Voltage Engineering", "Industrial Automation"
+    ],
+    "Mechanical Engineering": [
+        "Thermodynamics", "Fluid Mechanics", "Solid Mechanics", "Manufacturing Processes",
+        "Heat Transfer", "Machine Design", "Engineering Mechanics", "Strength of Materials",
+        "Heat & Mass Transfer", "Robotics", "CAD/CAM", "Automotive Engineering",
+        "Industrial Engineering"
+    ],
+    "Civil Engineering": [
+        "Structural Analysis", "Geotechnical Engineering", "Transportation Engineering",
+        "Environmental Engineering", "Construction Management", "Hydrology",
+        "Surveying", "Construction Materials", "Hydrology & Water Resources",
+        "Building Design & Architecture", "Earthquake Engineering"
+    ]
+}
 
     all_subjects = common_subjects + branch_subjects.get(branch, [])
     selected_subjects = st.multiselect("Choose your subjects (select up to 10)", options=all_subjects, default=all_subjects[:10], key="subjects")
