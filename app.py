@@ -78,7 +78,74 @@ def allocate_study_time(selected_subjects, total_hours, efficiency_level, proble
         allocated_times[subject] = f"{hours}h {minutes}m"
     
     return allocated_times
-    
+
+def login_page():
+    st.title("Learn Mate - Student Performance Application")
+    st.header("Login")
+
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT * FROM students WHERE email = %s AND password = %s", (email, password))
+            user = cur.fetchone()
+            if user:
+                st.session_state["email"] = email
+                st.session_state["page"] = "Dashboard"
+                st.success("Login successful!")
+                st.rerun()
+            else:
+                st.error("Invalid email or password.")
+        except Exception as e:
+            st.error(f"Error: {e}")
+        finally:
+            cur.close()
+            conn.close()
+
+    if st.button("Sign Up"):
+        st.session_state["page"] = "Sign Up"
+        st.rerun()
+
+def signup_page():
+    st.title("Learn Mate - Student Performance Application")
+    st.header("Sign Up")
+
+    name = st.text_input("Name")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    confirm_password = st.text_input("Confirm Password", type="password")
+
+    if st.button("Sign Up"):
+        if password != confirm_password:
+            st.error("Passwords do not match.")
+        else:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            try:
+                cur.execute(
+                    sql.SQL("""
+                        INSERT INTO students (name, email, password)
+                        VALUES (%s, %s, %s)
+                    """),
+                    (name, email, password)
+                )
+                conn.commit()
+                st.success("Sign up successful! Please log in.")
+                st.session_state["page"] = "Login"
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error: {e}")
+            finally:
+                cur.close()
+                conn.close()
+
+    if st.button("Back to Login"):
+        st.session_state["page"] = "Login"
+        st.rerun()
+
 def student_info():
     st.title("Learn Mate - Student Performance Application")
     st.header("Student Information")
@@ -105,44 +172,44 @@ def student_info():
         "Engineering Drawing"
     ]
 
-branch_subjects = {
-    "Computer Science": [
-        "Advanced Programming", "Database Management Systems", "Software Engineering",
-        "Machine Learning", "Artificial Intelligence", "Computer Architecture",
-        "Programming", "Data Structures & Algorithms", "Operating Systems",
-        "Computer Networks", "Web Technologies", "Compiler Design",
-        "Object-Oriented Programming", "Cryptography & Network Security",
-        "Software Testing", "Data Mining & Data Warehousing",
-        "Business Communication & Ethics", "Business Analytics", "Digital Marketing"
-    ],
-    "Artificial Intelligence": [
-        "Deep Learning", "Natural Language Processing", "Computer Vision",
-        "Reinforcement Learning", "AI Ethics", "Robotics", "Artificial Intelligence",
-        "Machine Learning", "Data Science & Analytics", "Neural Networks",
-        "Linear Algebra for ML", "Data Visualization"
-    ],
-    "Electrical Engineering": [
-        "Circuit Theory", "Power Systems", "Control Systems", "Signal Processing",
-        "Microelectronics", "Renewable Energy Systems", "Digital Logic Design",
-        "Analog & Digital Electronics", "Signals & Systems", "Microprocessors & Microcontrollers",
-        "Communication Systems", "VLSI Design", "Antennas & Wave Propagation",
-        "Embedded Systems", "Optical Communication", "IoT & Wireless Sensor Networks",
-        "Electrical Circuits", "Electrical Machines", "Power Electronics",
-        "Digital Signal Processing", "High Voltage Engineering", "Industrial Automation"
-    ],
-    "Mechanical Engineering": [
-        "Thermodynamics", "Fluid Mechanics", "Solid Mechanics", "Manufacturing Processes",
-        "Heat Transfer", "Machine Design", "Engineering Mechanics", "Strength of Materials",
-        "Heat & Mass Transfer", "Robotics", "CAD/CAM", "Automotive Engineering",
-        "Industrial Engineering"
-    ],
-    "Civil Engineering": [
-        "Structural Analysis", "Geotechnical Engineering", "Transportation Engineering",
-        "Environmental Engineering", "Construction Management", "Hydrology",
-        "Surveying", "Construction Materials", "Hydrology & Water Resources",
-        "Building Design & Architecture", "Earthquake Engineering"
-    ]
-}
+    branch_subjects = {
+        "Computer Science": [
+            "Advanced Programming", "Database Management Systems", "Software Engineering",
+            "Machine Learning", "Artificial Intelligence", "Computer Architecture",
+            "Programming", "Data Structures & Algorithms", "Operating Systems",
+            "Computer Networks", "Web Technologies", "Compiler Design",
+            "Object-Oriented Programming", "Cryptography & Network Security",
+            "Software Testing", "Data Mining & Data Warehousing",
+            "Business Communication & Ethics", "Business Analytics", "Digital Marketing"
+        ],
+        "Artificial Intelligence": [
+            "Deep Learning", "Natural Language Processing", "Computer Vision",
+            "Reinforcement Learning", "AI Ethics", "Robotics", "Artificial Intelligence",
+            "Machine Learning", "Data Science & Analytics", "Neural Networks",
+            "Linear Algebra for ML", "Data Visualization"
+        ],
+        "Electrical Engineering": [
+            "Circuit Theory", "Power Systems", "Control Systems", "Signal Processing",
+            "Microelectronics", "Renewable Energy Systems", "Digital Logic Design",
+            "Analog & Digital Electronics", "Signals & Systems", "Microprocessors & Microcontrollers",
+            "Communication Systems", "VLSI Design", "Antennas & Wave Propagation",
+            "Embedded Systems", "Optical Communication", "IoT & Wireless Sensor Networks",
+            "Electrical Circuits", "Electrical Machines", "Power Electronics",
+            "Digital Signal Processing", "High Voltage Engineering", "Industrial Automation"
+        ],
+        "Mechanical Engineering": [
+            "Thermodynamics", "Fluid Mechanics", "Solid Mechanics", "Manufacturing Processes",
+            "Heat Transfer", "Machine Design", "Engineering Mechanics", "Strength of Materials",
+            "Heat & Mass Transfer", "Robotics", "CAD/CAM", "Automotive Engineering",
+            "Industrial Engineering"
+        ],
+        "Civil Engineering": [
+            "Structural Analysis", "Geotechnical Engineering", "Transportation Engineering",
+            "Environmental Engineering", "Construction Management", "Hydrology",
+            "Surveying", "Construction Materials", "Hydrology & Water Resources",
+            "Building Design & Architecture", "Earthquake Engineering"
+        ]
+    }
 
     all_subjects = common_subjects + branch_subjects.get(branch, [])
     selected_subjects = st.multiselect("Choose your subjects (select up to 10)", options=all_subjects, default=all_subjects[:10], key="subjects")
@@ -193,68 +260,68 @@ branch_subjects = {
                 cur.close()
                 conn.close()
 
-    def dashboard():
-        st.header("Student Dashboard")
+def dashboard():
+    st.header("Student Dashboard")
     
-        if "email" not in st.session_state:
-            st.warning("Please log in to view your dashboard.")
-            return
+    if "email" not in st.session_state:
+        st.warning("Please log in to view your dashboard.")
+        return
     
-        email = st.session_state["email"]
-        try:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute(
-                "SELECT name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week, branch FROM students WHERE email = %s",
-                (email,),
-            )
-            student = cur.fetchone()
-            cur.close()
-            conn.close()
+    email = st.session_state["email"]
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week, branch FROM students WHERE email = %s",
+            (email,),
+        )
+        student = cur.fetchone()
+        cur.close()
+        conn.close()
     
-            if student:
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.write("### Student Information")
-                    st.write(f"**Name:** {student[0]}")
-                    st.write(f"**Age:** {student[1]}")
-                    st.write(f"**Email:** {student[2]}")
-                    st.write(f"**Mobile Number:** {student[3]}")
-                    st.write(f"**Study Time Per Week:** {student[8]} h/w")
-                    st.write(f"**Branch:** {student[9]}")
+        if student:
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("### Student Information")
+                st.write(f"**Name:** {student[0]}")
+                st.write(f"**Age:** {student[1]}")
+                st.write(f"**Email:** {student[2]}")
+                st.write(f"**Mobile Number:** {student[3]}")
+                st.write(f"**Study Time Per Week:** {student[8]} h/w")
+                st.write(f"**Branch:** {student[9]}")
     
-                with col2:
-                    st.write("### Study Time Allocation")
-                    selected_subjects = student[7].split(", ")
-                    study_time = student[8]
-                    coding_eff = student[4]
-                    problem_solving_eff = student[6]
-                    study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
-                    for subject, hours in study_allocation.items():
-                        st.write(f"- **{subject}:** {hours} h/w")
+            with col2:
+                st.write("### Study Time Allocation")
+                selected_subjects = student[7].split(", ")
+                study_time = student[8]
+                coding_eff = student[4]
+                problem_solving_eff = student[6]
+                study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
+                for subject, hours in study_allocation.items():
+                    st.write(f"- **{subject}:** {hours} h/w")
     
-                st.markdown("---")
-                col3, col4, col5, col6 = st.columns(4)  # Added a new column for the "Update Profile" button
-                with col3:
-                    if st.button("Predict Future Score 🎯"):
-                        st.session_state["page"] = "Predict Future Score"
-                        st.rerun()
-                with col4:
-                    if st.button("Take a Quiz 📝"):
-                        st.session_state["page"] = "Quiz"
-                        st.rerun()
-                with col5:
-                    if st.button("Study Content 📚"):
-                        st.session_state["page"] = "Study Content"
-                        st.rerun()
-                with col6:
-                    if st.button("Update Profile ✏️"):  # New button to update profile
-                        st.session_state["page"] = "Student Info"
-                        st.rerun()
-            else:
-                st.warning("No records found for the logged-in user.")
-        except Exception as e:
-            st.error(f"❌ Error loading dashboard: {e}")
+            st.markdown("---")
+            col3, col4, col5, col6 = st.columns(4)
+            with col3:
+                if st.button("Predict Future Score 🎯"):
+                    st.session_state["page"] = "Predict Future Score"
+                    st.rerun()
+            with col4:
+                if st.button("Take a Quiz 📝"):
+                    st.session_state["page"] = "Quiz"
+                    st.rerun()
+            with col5:
+                if st.button("Study Content 📚"):
+                    st.session_state["page"] = "Study Content"
+                    st.rerun()
+            with col6:
+                if st.button("Update Profile ✏️"):
+                    st.session_state["page"] = "Student Info"
+                    st.rerun()
+        else:
+            st.warning("No records found for the logged-in user.")
+    except Exception as e:
+        st.error(f"❌ Error loading dashboard: {e}")
 
 def predict_future_score():
     st.header("Predict Future Score 🎯")
@@ -300,7 +367,6 @@ def predict_future_score():
     if st.button("Back to Dashboard"):
         st.session_state["page"] = "Dashboard"
         st.rerun()
-
 def quiz_section():
     st.header("Quiz Section")
     
