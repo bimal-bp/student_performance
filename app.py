@@ -234,7 +234,7 @@ def dashboard():
                     st.write(f"- **{subject}:** {hours} h/w")
 
             st.markdown("---")
-            col3, col4, col5 = st.columns(3)
+            col3, col4, col5, col6 = st.columns(4)  # Added a new column for the "Update Profile" button
             with col3:
                 if st.button("Predict Future Score 🎯"):
                     st.session_state["page"] = "Predict Future Score"
@@ -246,6 +246,10 @@ def dashboard():
             with col5:
                 if st.button("Study Content 📚"):
                     st.session_state["page"] = "Study Content"
+                    st.rerun()
+            with col6:
+                if st.button("Update Profile ✏️"):  # New button to update profile
+                    st.session_state["page"] = "Student Info"
                     st.rerun()
         else:
             st.warning("No records found for the logged-in user.")
