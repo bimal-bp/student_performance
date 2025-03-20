@@ -638,16 +638,20 @@ def add_study_content():
 
 def main():
     if "page" not in st.session_state:
-        st.session_state["page"] = "Student Info"
+        st.session_state["page"] = "Login"  # Start with the Login page
 
-    if st.session_state["page"] == "Student Info":
+    if st.session_state["page"] == "Login":
+        login_page()
+    elif st.session_state["page"] == "Sign Up":
+        signup_page()
+    elif st.session_state["page"] == "Student Info":
         student_info()
     elif st.session_state["page"] == "Dashboard":
         dashboard()
     elif st.session_state["page"] == "Quiz":
         quiz_section()
     elif st.session_state["page"] == "Study Content":
-        add_study_content()
+        add_study_content()  # Ensure this function is defined in your code
     elif st.session_state["page"] == "Predict Future Score":
         predict_future_score()
 
