@@ -193,68 +193,68 @@ branch_subjects = {
                 cur.close()
                 conn.close()
 
-def dashboard():
-    st.header("Student Dashboard")
-
-    if "email" not in st.session_state:
-        st.warning("Please log in to view your dashboard.")
-        return
-
-    email = st.session_state["email"]
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week, branch FROM students WHERE email = %s",
-            (email,),
-        )
-        student = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        if student:
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write("### Student Information")
-                st.write(f"**Name:** {student[0]}")
-                st.write(f"**Age:** {student[1]}")
-                st.write(f"**Email:** {student[2]}")
-                st.write(f"**Mobile Number:** {student[3]}")
-                st.write(f"**Study Time Per Week:** {student[8]} h/w")
-                st.write(f"**Branch:** {student[9]}")
-
-            with col2:
-                st.write("### Study Time Allocation")
-                selected_subjects = student[7].split(", ")
-                study_time = student[8]
-                coding_eff = student[4]
-                problem_solving_eff = student[6]
-                study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
-                for subject, hours in study_allocation.items():
-                    st.write(f"- **{subject}:** {hours} h/w")
-
-            st.markdown("---")
-            col3, col4, col5, col6 = st.columns(4)  # Added a new column for the "Update Profile" button
-            with col3:
-                if st.button("Predict Future Score 🎯"):
-                    st.session_state["page"] = "Predict Future Score"
-                    st.rerun()
-            with col4:
-                if st.button("Take a Quiz 📝"):
-                    st.session_state["page"] = "Quiz"
-                    st.rerun()
-            with col5:
-                if st.button("Study Content 📚"):
-                    st.session_state["page"] = "Study Content"
-                    st.rerun()
-            with col6:
-                if st.button("Update Profile ✏️"):  # New button to update profile
-                    st.session_state["page"] = "Student Info"
-                    st.rerun()
-        else:
-            st.warning("No records found for the logged-in user.")
-    except Exception as e:
-        st.error(f"❌ Error loading dashboard: {e}")
+    def dashboard():
+        st.header("Student Dashboard")
+    
+        if "email" not in st.session_state:
+            st.warning("Please log in to view your dashboard.")
+            return
+    
+        email = st.session_state["email"]
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week, branch FROM students WHERE email = %s",
+                (email,),
+            )
+            student = cur.fetchone()
+            cur.close()
+            conn.close()
+    
+            if student:
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write("### Student Information")
+                    st.write(f"**Name:** {student[0]}")
+                    st.write(f"**Age:** {student[1]}")
+                    st.write(f"**Email:** {student[2]}")
+                    st.write(f"**Mobile Number:** {student[3]}")
+                    st.write(f"**Study Time Per Week:** {student[8]} h/w")
+                    st.write(f"**Branch:** {student[9]}")
+    
+                with col2:
+                    st.write("### Study Time Allocation")
+                    selected_subjects = student[7].split(", ")
+                    study_time = student[8]
+                    coding_eff = student[4]
+                    problem_solving_eff = student[6]
+                    study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
+                    for subject, hours in study_allocation.items():
+                        st.write(f"- **{subject}:** {hours} h/w")
+    
+                st.markdown("---")
+                col3, col4, col5, col6 = st.columns(4)  # Added a new column for the "Update Profile" button
+                with col3:
+                    if st.button("Predict Future Score 🎯"):
+                        st.session_state["page"] = "Predict Future Score"
+                        st.rerun()
+                with col4:
+                    if st.button("Take a Quiz 📝"):
+                        st.session_state["page"] = "Quiz"
+                        st.rerun()
+                with col5:
+                    if st.button("Study Content 📚"):
+                        st.session_state["page"] = "Study Content"
+                        st.rerun()
+                with col6:
+                    if st.button("Update Profile ✏️"):  # New button to update profile
+                        st.session_state["page"] = "Student Info"
+                        st.rerun()
+            else:
+                st.warning("No records found for the logged-in user.")
+        except Exception as e:
+            st.error(f"❌ Error loading dashboard: {e}")
 
 def predict_future_score():
     st.header("Predict Future Score 🎯")
