@@ -6,11 +6,6 @@ import numpy as np
 import pickle
 import random
 
-# Database Connection String
-DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
-
-def get_db_connection():
-    return psycopg2.connect(DB_URL)
 
 # Subject importance ratings
 subject_ratings = {
@@ -80,13 +75,98 @@ def allocate_study_time(selected_subjects, total_hours, efficiency_level, proble
     
     return allocated_times
     
+# Database Connection String
+DB_URL = "postgresql://neondb_owner:npg_P0wyolC1KBLW@ep-holy-mud-a5su2ghw-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
+
+def get_db_connection():
+    return psycopg2.connect(DB_URL)
+
+# Hash password using SHA-256
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Signup Page
+def signup():
+    st.title("Sign Up")
+    st.write("Create a new account to get started.")
+
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    confirm_password = st.text_input("Confirm Password", type="password")
+
+    if st.button("Sign Up"):
+        if password != confirm_password:
+            st.error("Passwords do not match.")
+        elif not email or not password:
+            st.error("Please fill in all fields.")
+        else:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            try:
+                # Check if the email already exists
+                cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+                if cur.fetchone():
+                    st.error("Email already exists. Please log in.")
+                else:
+                    # Insert new user into the database
+                    password_hash = hash_password(password)
+                    cur.execute(
+                        "INSERT INTO users (email, password_hash) VALUES (%s, %s)",
+                        (email, password_hash),
+                    )
+                    conn.commit()
+                    st.success("Account created successfully! Please log in.")
+                    st.session_state["page"] = "Login"
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Error: {e}")
+            finally:
+                cur.close()
+                conn.close()
+
+# Login Page
+def login():
+    st.title("Login")
+    st.write("Log in to access your account.")
+
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        if not email or not password:
+            st.error("Please fill in all fields.")
+        else:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            try:
+                # Check if the email and password match
+                password_hash = hash_password(password)
+                cur.execute(
+                    "SELECT id FROM users WHERE email = %s AND password_hash = %s",
+                    (email, password_hash),
+                )
+                user = cur.fetchone()
+                if user:
+                    st.session_state["user_id"] = user[0]
+                    st.session_state["email"] = email
+                    st.session_state["page"] = "Student Info"
+                    st.success("Logged in successfully!")
+                    st.rerun()
+                else:
+                    st.error("Invalid email or password.")
+            except Exception as e:
+                st.error(f"Error: {e}")
+            finally:
+                cur.close()
+                conn.close()
+
+# Student Info Page (Updated to use user_id)
 def student_info():
     st.title("Learn Mate - Student Performance Application")
     st.header("Student Information")
 
     name = st.text_input("Name")
     age = st.number_input("Age", min_value=1, max_value=100)
-    email = st.text_input("Email")
     mobile_number = st.text_input("Mobile Number")
 
     st.subheader("Select Your Branch")
@@ -161,8 +241,8 @@ def student_info():
     study_time = st.number_input("Total Study Time Per Week (hours)", min_value=1, max_value=168)
 
     if st.button("Save Information"):
-        if not email:
-            st.error("Please enter an email.")
+        if "user_id" not in st.session_state:
+            st.error("Please log in to save your information.")
         else:
             conn = get_db_connection()
             cur = conn.cursor()
@@ -170,10 +250,10 @@ def student_info():
                 subjects_str = ", ".join(selected_subjects)
                 cur.execute(
                     sql.SQL("""
-                        INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, 
+                        INSERT INTO students (user_id, name, age, mobile_number, coding_efficiency, math_efficiency, 
                         problem_solving_efficiency, conceptual_understanding, time_management, selected_subjects, study_time_per_week, branch)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        ON CONFLICT (email) DO UPDATE SET 
+                        ON CONFLICT (user_id) DO UPDATE SET 
                         name = EXCLUDED.name, age = EXCLUDED.age, mobile_number = EXCLUDED.mobile_number,
                         coding_efficiency = EXCLUDED.coding_efficiency, math_efficiency = EXCLUDED.math_efficiency,
                         problem_solving_efficiency = EXCLUDED.problem_solving_efficiency,
@@ -181,11 +261,10 @@ def student_info():
                         time_management = EXCLUDED.time_management, selected_subjects = EXCLUDED.selected_subjects,
                         study_time_per_week = EXCLUDED.study_time_per_week, branch = EXCLUDED.branch
                     """),
-                    (name, age, email, mobile_number, coding_eff, math_eff, problem_solving_eff, conceptual_understanding, time_management, subjects_str, study_time, branch)
+                    (st.session_state["user_id"], name, age, mobile_number, coding_eff, math_eff, problem_solving_eff, conceptual_understanding, time_management, subjects_str, study_time, branch)
                 )
                 conn.commit()
                 st.success("✅ Student information saved successfully!")
-                st.session_state["email"] = email
                 st.session_state["page"] = "Dashboard"
                 st.rerun()
             except Exception as e:
@@ -193,7 +272,6 @@ def student_info():
             finally:
                 cur.close()
                 conn.close()
-
 def dashboard():
     st.header("Student Dashboard")
 
