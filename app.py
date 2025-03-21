@@ -660,9 +660,9 @@ def main():
     elif st.session_state["page"] == "Quiz":
         quiz_section()
     elif st.session_state["page"] == "Study Content":
-        add_study_content() 
+        add_study_content()
     elif st.session_state["page"] == "Predict Future Score":
         predict_future_score()
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()
