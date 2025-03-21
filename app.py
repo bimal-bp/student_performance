@@ -47,14 +47,14 @@ def sign_up():
                 )
                 conn.commit()
                 st.success("✅ Account created successfully! Please log in.")
-                st.session_state["page"] = "Login"
-                st.rerun()
+                if st.button("Go to Login"):
+                    st.session_state["page"] = "Login"
+                    st.rerun()
             except Exception as e:
                 st.error(f"❌ Error: {e}")
             finally:
                 cur.close()
                 conn.close()
-
 # Login Page
 def login():
     st.title("Login")
