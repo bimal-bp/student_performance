@@ -1,3 +1,4 @@
+
 import streamlit as st
 import psycopg2
 from psycopg2 import sql
@@ -78,7 +79,6 @@ def allocate_study_time(selected_subjects, total_hours, efficiency_level, proble
         allocated_times[subject] = f"{hours}h {minutes}m"
     
     return allocated_times
-
 # Database connection function
 def get_db_connection():
     conn = psycopg2.connect(
@@ -276,11 +276,11 @@ def student_info():
 
 def dashboard():
     st.header("Student Dashboard")
-    
+
     if "email" not in st.session_state:
         st.warning("Please log in to view your dashboard.")
         return
-    
+
     email = st.session_state["email"]
     try:
         conn = get_db_connection()
@@ -292,7 +292,7 @@ def dashboard():
         student = cur.fetchone()
         cur.close()
         conn.close()
-    
+
         if student:
             col1, col2 = st.columns(2)
             with col1:
@@ -303,7 +303,7 @@ def dashboard():
                 st.write(f"**Mobile Number:** {student[3]}")
                 st.write(f"**Study Time Per Week:** {student[8]} h/w")
                 st.write(f"**Branch:** {student[9]}")
-    
+
             with col2:
                 st.write("### Study Time Allocation")
                 selected_subjects = student[7].split(", ")
@@ -313,9 +313,9 @@ def dashboard():
                 study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
                 for subject, hours in study_allocation.items():
                     st.write(f"- **{subject}:** {hours} h/w")
-    
+
             st.markdown("---")
-            col3, col4, col5, col6 = st.columns(4)
+            col3, col4, col5 = st.columns(3)
             with col3:
                 if st.button("Predict Future Score 🎯"):
                     st.session_state["page"] = "Predict Future Score"
@@ -327,10 +327,6 @@ def dashboard():
             with col5:
                 if st.button("Study Content 📚"):
                     st.session_state["page"] = "Study Content"
-                    st.rerun()
-            with col6:
-                if st.button("Update Profile ✏️"):
-                    st.session_state["page"] = "Student Info"
                     st.rerun()
         else:
             st.warning("No records found for the logged-in user.")
@@ -381,6 +377,7 @@ def predict_future_score():
     if st.button("Back to Dashboard"):
         st.session_state["page"] = "Dashboard"
         st.rerun()
+
 def quiz_section():
     st.header("Quiz Section")
     
@@ -652,20 +649,16 @@ def add_study_content():
 
 def main():
     if "page" not in st.session_state:
-        st.session_state["page"] = "Login"  # Start with the Login page
+        st.session_state["page"] = "Student Info"
 
-    if st.session_state["page"] == "Login":
-        login_page()
-    elif st.session_state["page"] == "Sign Up":
-        signup_page()
-    elif st.session_state["page"] == "Student Info":
+    if st.session_state["page"] == "Student Info":
         student_info()
     elif st.session_state["page"] == "Dashboard":
         dashboard()
     elif st.session_state["page"] == "Quiz":
         quiz_section()
     elif st.session_state["page"] == "Study Content":
-        add_study_content()  # Ensure this function is defined in your code
+        add_study_content()
     elif st.session_state["page"] == "Predict Future Score":
         predict_future_score()
 
