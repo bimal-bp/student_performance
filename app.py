@@ -669,7 +669,6 @@ def landing_page():
             st.session_state["page"] = "Login"
             st.rerun()
 
-# Main Function
 def main():
     if "page" not in st.session_state:
         st.session_state["page"] = "Landing Page"
@@ -684,8 +683,12 @@ def main():
         student_info()
     elif st.session_state["page"] == "Dashboard":
         dashboard()
-
+    elif st.session_state["page"] == "Quiz":
+        quiz_section()
+    elif st.session_state["page"] == "Study Content":
+        add_study_content()
+    elif st.session_state["page"] == "Predict Future Score":
+        predict_future_score()
 
 if __name__ == "__main__":
     main()
-       
