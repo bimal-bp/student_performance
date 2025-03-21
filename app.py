@@ -1,4 +1,3 @@
-
 import streamlit as st
 import psycopg2
 from psycopg2 import sql
@@ -86,9 +85,25 @@ def login():
         finally:
             cur.close()
             conn.close() 
-            
 
+# Student Info Page (Placeholder)
+def student_info():
+    st.title("Student Info")
+    st.write("This is the student info page.")
+    # Add your student info form here
+    if st.button("Go to Dashboard"):
+        st.session_state["page"] = "Dashboard"
+        st.rerun()
 
+# Allocate Study Time (Placeholder)
+def allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff):
+    # Placeholder logic for allocating study time
+    allocation = {}
+    for subject in selected_subjects:
+        allocation[subject] = study_time // len(selected_subjects)
+    return allocation
+
+# Dashboard Page
 def dashboard():
     st.header("Student Dashboard")
 
@@ -98,7 +113,7 @@ def dashboard():
 
     email = st.session_state["email"]
     try:
-        conn = get_db_connection()
+        conn = get_app_db_connection()
         cur = conn.cursor()
         cur.execute(
             "SELECT name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week, branch FROM students WHERE email = %s",
@@ -178,7 +193,6 @@ def main():
         student_info()
     elif st.session_state["page"] == "Dashboard":
         dashboard()
-
 
 if __name__ == "__main__":
     main()
