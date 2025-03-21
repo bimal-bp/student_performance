@@ -645,11 +645,17 @@ def add_study_content():
         st.session_state["page"] = "Dashboard"
         st.rerun()
 
+
+# Main Function
 def main():
     if "page" not in st.session_state:
-        st.session_state["page"] = "Student Info"
+        st.session_state["page"] = "Signup"
 
-    if st.session_state["page"] == "Student Info":
+    if st.session_state["page"] == "Signup":
+        signup()
+    elif st.session_state["page"] == "Login":
+        login()
+    elif st.session_state["page"] == "Student Info":
         student_info()
     elif st.session_state["page"] == "Dashboard":
         dashboard()
@@ -661,4 +667,5 @@ def main():
         predict_future_score()
 
 if __name__ == "__main__":
+    main()
     main()
