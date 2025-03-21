@@ -13,11 +13,12 @@ DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-poole
 
 def get_db_connection():
     return psycopg2.connect(DB_URL)
+    
 def get_auth_db_connection():
     return psycopg2.connect(AUTH_DB_URL)
 
 def get_app_db_connection():
-    return psycopg2.connect(APP_DB_URL)
+    return psycopg2.connect(DB_URL)
 
 # Hash password for security
 def hash_password(password):
