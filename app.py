@@ -5,13 +5,88 @@ from psycopg2 import sql
 import numpy as np
 import pickle
 import random
+import hashlib
 
-# Database Connection String
-DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+# Database Connection Strings
+AUTH_DB_URL = "postgresql://neondb_owner:npg_P0wyolC1KBLW@ep-holy-mud-a5su2ghw-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
+APP_DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
 
-def get_db_connection():
-    return psycopg2.connect(DB_URL)
+def get_auth_db_connection():
+    return psycopg2.connect(AUTH_DB_URL)
 
+def get_app_db_connection():
+    return psycopg2.connect(APP_DB_URL)
+
+# Hash password for security
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Sign-Up Page
+def sign_up():
+    st.title("Sign Up")
+    st.write("Create a new account to access the application.")
+
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    confirm_password = st.text_input("Confirm Password", type="password")
+
+    if st.button("Sign Up"):
+        if password != confirm_password:
+            st.error("Passwords do not match.")
+        else:
+            conn = get_auth_db_connection()
+            cur = conn.cursor()
+            try:
+                hashed_password = hash_password(password)
+                cur.execute(
+                    sql.SQL("""
+                        INSERT INTO users (email, password)
+                        VALUES (%s, %s)
+                        ON CONFLICT (email) DO NOTHING
+                    """),
+                    (email, hashed_password)
+                )
+                conn.commit()
+                st.success("✅ Account created successfully! Please log in.")
+                st.session_state["page"] = "Login"
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ Error: {e}")
+            finally:
+                cur.close()
+                conn.close()
+
+# Login Page
+def login():
+    st.title("Login")
+    st.write("Log in to access the application.")
+
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        conn = get_auth_db_connection()
+        cur = conn.cursor()
+        try:
+            hashed_password = hash_password(password)
+            cur.execute(
+                "SELECT email FROM users WHERE email = %s AND password = %s",
+                (email, hashed_password)
+            )
+            user = cur.fetchone()
+            if user:
+                st.success("✅ Login successful!")
+                st.session_state["email"] = email
+                st.session_state["page"] = "Student Info"
+                st.rerun()
+            else:
+                st.error("❌ Invalid email or password.")
+        except Exception as e:
+            st.error(f"❌ Error: {e}")
+        finally:
+            cur.close()
+            conn.close() 
+            
 # Subject importance ratings
 subject_ratings = {
     # Computer Science
