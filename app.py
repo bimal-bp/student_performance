@@ -391,6 +391,20 @@ def quiz_section():
         st.session_state["page"] = "Dashboard"
         st.rerun()
 
+def landing_page():
+    st.title("Welcome to Learn Mate")
+    st.write("Please choose an option to get started.")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Sign Up"):
+            st.session_state["page"] = "Sign Up"
+            st.rerun()
+    with col2:
+        if st.button("Login"):
+            st.session_state["page"] = "Login"
+            st.rerun()
+
 # Main Function
 def main():
     if "page" not in st.session_state:
@@ -406,6 +420,7 @@ def main():
         student_info()
     elif st.session_state["page"] == "Dashboard":
         dashboard()
+
 
 if __name__ == "__main__":
     main()
