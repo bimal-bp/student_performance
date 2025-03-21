@@ -78,17 +78,7 @@ def allocate_study_time(selected_subjects, total_hours, efficiency_level, proble
         allocated_times[subject] = f"{hours}h {minutes}m"
     
     return allocated_times
- # Database connection function
-def get_db_connection():
-    conn = psycopg2.connect(
-        dbname="neondb",
-        user="neondb_owner",
-        password="npg_1qEB9MOIukVY",
-        host="ep-broad-snowflake-a5j0v297-pooler.us-east-2.aws.neon.tech",
-        port="5432",
-        sslmode="require"
-    )
-    return conn
+
 # Login page
 def login_page():
     st.title("Learn Mate - Student Performance Application")
