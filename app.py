@@ -642,12 +642,29 @@ def add_study_content():
         st.session_state["page"] = "Dashboard"
         st.rerun()
 
+# Landing Page
+def landing_page():
+    st.title("Welcome to Learn Mate")
+    st.write("Please choose an option to get started.")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Sign Up"):
+            st.session_state["page"] = "Sign Up"
+            st.rerun()
+    with col2:
+        if st.button("Login"):
+            st.session_state["page"] = "Login"
+            st.rerun()
+
 # Main Function
 def main():
     if "page" not in st.session_state:
-        st.session_state["page"] = "Login"
+        st.session_state["page"] = "Landing Page"
 
-    if st.session_state["page"] == "Sign Up":
+    if st.session_state["page"] == "Landing Page":
+        landing_page()
+    elif st.session_state["page"] == "Sign Up":
         sign_up()
     elif st.session_state["page"] == "Login":
         login()
