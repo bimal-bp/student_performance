@@ -186,44 +186,44 @@ def student_info():
         "Engineering Drawing"
     ]
 
-    branch_subjects = {
-        "Computer Science": [
-            "Advanced Programming", "Database Management Systems", "Software Engineering",
-            "Machine Learning", "Artificial Intelligence", "Computer Architecture",
-            "Programming", "Data Structures & Algorithms", "Operating Systems",
-            "Computer Networks", "Web Technologies", "Compiler Design",
-            "Object-Oriented Programming", "Cryptography & Network Security",
-            "Software Testing", "Data Mining & Data Warehousing",
-            "Business Communication & Ethics", "Business Analytics", "Digital Marketing"
-        ],
-        "Artificial Intelligence": [
-            "Deep Learning", "Natural Language Processing", "Computer Vision",
-            "Reinforcement Learning", "AI Ethics", "Robotics", "Artificial Intelligence",
-            "Machine Learning", "Data Science & Analytics", "Neural Networks",
-            "Linear Algebra for ML", "Data Visualization"
-        ],
-        "Electrical Engineering": [
-            "Circuit Theory", "Power Systems", "Control Systems", "Signal Processing",
-            "Microelectronics", "Renewable Energy Systems", "Digital Logic Design",
-            "Analog & Digital Electronics", "Signals & Systems", "Microprocessors & Microcontrollers",
-            "Communication Systems", "VLSI Design", "Antennas & Wave Propagation",
-            "Embedded Systems", "Optical Communication", "IoT & Wireless Sensor Networks",
-            "Electrical Circuits", "Electrical Machines", "Power Electronics",
-            "Digital Signal Processing", "High Voltage Engineering", "Industrial Automation"
-        ],
-        "Mechanical Engineering": [
-            "Thermodynamics", "Fluid Mechanics", "Solid Mechanics", "Manufacturing Processes",
-            "Heat Transfer", "Machine Design", "Engineering Mechanics", "Strength of Materials",
-            "Heat & Mass Transfer", "Robotics", "CAD/CAM", "Automotive Engineering",
-            "Industrial Engineering"
-        ],
-        "Civil Engineering": [
-            "Structural Analysis", "Geotechnical Engineering", "Transportation Engineering",
-            "Environmental Engineering", "Construction Management", "Hydrology",
-            "Surveying", "Construction Materials", "Hydrology & Water Resources",
-            "Building Design & Architecture", "Earthquake Engineering"
-        ]
-    }
+branch_subjects = {
+    "Computer Science": [
+        "Advanced Programming", "Database Management Systems", "Software Engineering",
+        "Machine Learning", "Artificial Intelligence", "Computer Architecture",
+        "Programming", "Data Structures & Algorithms", "Operating Systems",
+        "Computer Networks", "Web Technologies", "Compiler Design",
+        "Object-Oriented Programming", "Cryptography & Network Security",
+        "Software Testing", "Data Mining & Data Warehousing",
+        "Business Communication & Ethics", "Business Analytics", "Digital Marketing"
+    ],
+    "Artificial Intelligence": [
+        "Deep Learning", "Natural Language Processing", "Computer Vision",
+        "Reinforcement Learning", "AI Ethics", "Robotics", "Artificial Intelligence",
+        "Machine Learning", "Data Science & Analytics", "Neural Networks",
+        "Linear Algebra for ML", "Data Visualization"
+    ],
+    "Electrical Engineering": [
+        "Circuit Theory", "Power Systems", "Control Systems", "Signal Processing",
+        "Microelectronics", "Renewable Energy Systems", "Digital Logic Design",
+        "Analog & Digital Electronics", "Signals & Systems", "Microprocessors & Microcontrollers",
+        "Communication Systems", "VLSI Design", "Antennas & Wave Propagation",
+        "Embedded Systems", "Optical Communication", "IoT & Wireless Sensor Networks",
+        "Electrical Circuits", "Electrical Machines", "Power Electronics",
+        "Digital Signal Processing", "High Voltage Engineering", "Industrial Automation"
+    ],
+    "Mechanical Engineering": [
+        "Thermodynamics", "Fluid Mechanics", "Solid Mechanics", "Manufacturing Processes",
+        "Heat Transfer", "Machine Design", "Engineering Mechanics", "Strength of Materials",
+        "Heat & Mass Transfer", "Robotics", "CAD/CAM", "Automotive Engineering",
+        "Industrial Engineering"
+    ],
+    "Civil Engineering": [
+        "Structural Analysis", "Geotechnical Engineering", "Transportation Engineering",
+        "Environmental Engineering", "Construction Management", "Hydrology",
+        "Surveying", "Construction Materials", "Hydrology & Water Resources",
+        "Building Design & Architecture", "Earthquake Engineering"
+    ]
+}
 
     all_subjects = common_subjects + branch_subjects.get(branch, [])
     selected_subjects = st.multiselect("Choose your subjects (select up to 10)", options=all_subjects, default=all_subjects[:10], key="subjects")
@@ -649,20 +649,16 @@ def add_study_content():
 
 def main():
     if "page" not in st.session_state:
-        st.session_state["page"] = "Login"  # Start with the Login page
+        st.session_state["page"] = "Student Info"
 
-    if st.session_state["page"] == "Login":
-        login_page()
-    elif st.session_state["page"] == "Sign Up":
-        signup_page()
-    elif st.session_state["page"] == "Student Info":
+    if st.session_state["page"] == "Student Info":
         student_info()
     elif st.session_state["page"] == "Dashboard":
         dashboard()
     elif st.session_state["page"] == "Quiz":
         quiz_section()
     elif st.session_state["page"] == "Study Content":
-        add_study_content()  # Ensure this function is defined in your code
+        add_study_content()
     elif st.session_state["page"] == "Predict Future Score":
         predict_future_score()
 
