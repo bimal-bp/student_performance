@@ -47,14 +47,22 @@ def sign_up():
                 )
                 conn.commit()
                 st.success("✅ Account created successfully! Please log in.")
-                if st.button("Go to Login"):
-                    st.session_state["page"] = "Login"
-                    st.rerun()
+                # Set a flag in session state to indicate successful sign-up
+                st.session_state["signup_success"] = True
             except Exception as e:
                 st.error(f"❌ Error: {e}")
             finally:
                 cur.close()
                 conn.close()
+
+    # Check if sign-up was successful and show the "Go to Login" button
+    if st.session_state.get("signup_success", False):
+        if st.button("Go to Login"):
+            st.session_state["page"] = "Login"
+            # Clear the signup success flag
+            del st.session_state["signup_success"]
+            st.rerun()
+
 # Login Page
 def login():
     st.title("Login")
