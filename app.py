@@ -97,7 +97,72 @@ def login():
         finally:
             cur.close()
             conn.close()
+subject_ratings = {
+    # Computer Science
+    "Programming": 10, "Data Structures & Algorithms": 10, "Operating Systems": 9,
+    "Computer Networks": 9, "Database Management Systems": 9, "Software Engineering": 8,
+    "Web Technologies": 8, "Compiler Design": 7, "Object-Oriented Programming": 9,
+    "Cryptography & Network Security": 8, "Software Testing": 7, "Data Mining & Data Warehousing": 8,
+    "Business Communication & Ethics": 6, "Business Analytics": 7, "Digital Marketing": 7,
 
+    # Artificial Intelligence
+    "Artificial Intelligence": 10, "Machine Learning": 10, "Deep Learning": 9,
+    "Data Science & Analytics": 9, "Natural Language Processing": 8, "Neural Networks": 9,
+    "Reinforcement Learning": 8, "Computer Vision": 8, "Linear Algebra for ML": 9,
+    "Data Visualization": 9,
+
+    # Electrical Engineering
+    "Circuit Theory": 8, "Digital Logic Design": 9, "Analog & Digital Electronics": 9,
+    "Signals & Systems": 8, "Microprocessors & Microcontrollers": 9, "Communication Systems": 8,
+    "VLSI Design": 7, "Antennas & Wave Propagation": 7, "Embedded Systems": 9,
+    "Optical Communication": 7, "IoT & Wireless Sensor Networks": 8, "Electrical Circuits": 8,
+    "Control Systems": 9, "Power Systems": 8, "Electrical Machines": 8, "Power Electronics": 9,
+    "Digital Signal Processing": 9, "High Voltage Engineering": 7, "Renewable Energy Systems": 8,
+    "Industrial Automation": 8,
+
+    # Mechanical Engineering
+    "Engineering Mechanics": 9, "Strength of Materials": 9, "Thermodynamics": 9,
+    "Fluid Mechanics": 8, "Manufacturing Processes": 8, "Heat & Mass Transfer": 9,
+    "Machine Design": 9, "Robotics": 8, "CAD/CAM": 9, "Automotive Engineering": 7,
+    "Industrial Engineering": 8,
+
+    # Civil Engineering
+    "Structural Analysis": 9, "Surveying": 8, "Geotechnical Engineering": 9,
+    "Construction Materials": 8, "Transportation Engineering": 8, "Environmental Engineering": 8,
+    "Hydrology & Water Resources": 7, "Building Design & Architecture": 8, "Earthquake Engineering": 8,
+
+    # Common subjects
+    "Engineering Mathematics": 10, "Engineering Physics": 8, "Engineering Chemistry": 6,
+    "Basic Electrical and Electronical Engineering": 7, "Big Data Technologies": 8,
+    "Cloud Computing": 8, "Cyber Security": 8, "Blockchain Technology": 7, "IoT (Internet of Things)": 7,
+    "Introduction to AI & ML": 8, "Probability & Statistics": 10, "Engineering Drawing": 7,
+}
+
+def allocate_study_time(selected_subjects, total_hours, efficiency_level, problem_solving):
+    # Define efficiency and problem-solving factors
+    efficiency_factor = {"low": 0.8, "intermediate": 1.0, "high": 1.2}[efficiency_level]
+    problem_solving_factor = {"low": 0.8, "intermediate": 1.0, "high": 1.2}[problem_solving]
+    
+    # Get ratings for selected subjects (default to 5 if not found)
+    ratings = np.array([subject_ratings.get(sub, 5) for sub in selected_subjects])
+    
+    # Calculate weighted ratings
+    weighted_ratings = ratings * efficiency_factor * problem_solving_factor
+    
+    # Normalize weights
+    normalized_weights = weighted_ratings / np.sum(weighted_ratings)
+    
+    # Allocate time in hours
+    allocated_times_hours = normalized_weights * total_hours
+    
+    # Convert decimal hours to hours and minutes
+    allocated_times = {}
+    for subject, time_hours in zip(selected_subjects, allocated_times_hours):
+        hours = int(time_hours)
+        minutes = int((time_hours - hours) * 60)
+        allocated_times[subject] = f"{hours}h {minutes}m"
+    
+    return allocated_times
 # Student Info Page
 def student_info():
     st.title("Learn Mate - Student Performance Application")
@@ -223,7 +288,7 @@ def dashboard():
 
     email = st.session_state["email"]
     try:
-        conn = get_app_db_connection()
+        conn = get_db_connection()
         cur = conn.cursor()
         cur.execute(
             "SELECT name, age, email, mobile_number, coding_efficiency, math_efficiency, problem_solving_efficiency, selected_subjects, study_time_per_week, branch FROM students WHERE email = %s",
@@ -273,7 +338,6 @@ def dashboard():
     except Exception as e:
         st.error(f"❌ Error loading dashboard: {e}")
 
-# Predict Future Score Page
 def predict_future_score():
     st.header("Predict Future Score 🎯")
     st.write("Please provide additional details to predict your future score.")
@@ -319,7 +383,6 @@ def predict_future_score():
         st.session_state["page"] = "Dashboard"
         st.rerun()
 
-# Quiz Section
 def quiz_section():
     st.header("Quiz Section")
     
@@ -386,6 +449,204 @@ def quiz_section():
                     'selected_branch': None
                 })
                 st.rerun()
+
+    if st.button("Back to Dashboard"):
+        st.session_state["page"] = "Dashboard"
+        st.rerun()
+
+def add_study_content():
+    st.header("Study Materials")
+
+    # Define the study content links for each subject
+    study_content_links = {
+        # Common Subjects
+        "Engineering Mathematics": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=ME564_Lecture_1",
+            "Online Course": "https://www.coursera.org/specializations/mathematics-for-engineers",
+            "Study Material": "https://nptel.ac.in/courses/111/105/111105080/"
+        },
+        "Engineering Physics": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Engineering_Physics_Introduction",
+            "Online Course": "https://ocw.mit.edu/courses/physics/8-01sc-physics-i-classical-mechanics-fall-2010/",
+            "Study Material": "https://nptel.ac.in/courses/115/106/115106005/"
+        },
+        "Engineering Chemistry": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Engineering_Chemistry_Introduction",
+            "Online Course": "https://ocw.mit.edu/courses/chemistry/5-111sc-principles-of-chemical-science-fall-2014/",
+            "Study Material": "https://nptel.ac.in/courses/103/106/103106006/"
+        },
+        "Programming": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Programming_Basics_Introduction",
+            "Online Course": "https://www.edx.org/course/introduction-to-computer-science",
+            "Study Material": "https://www.coursera.org/learn/python"
+        },
+        "Probability & Statistics": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Probability_Statistics_Introduction",
+            "Online Course": "https://www.khanacademy.org/math/statistics-probability",
+            "Study Material": "https://ocw.mit.edu/courses/mathematics/18-05-introduction-to-probability-and-statistics-spring-2014/"
+        },
+        "Basic Electrical Engineering": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=ELECTRICITY_FOR_BEGINNERS",
+            "Online Course": "https://www.khanacademy.org/science/electrical-engineering",
+            "Study Material": "https://www.electronics-tutorials.ws/"
+        },
+        "Engineering Drawing": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Introduction_to_Engineering_Drawing_1",
+            "Online Course": "https://ocw.mit.edu/courses/mechanical-engineering/2-007-design-and-manufacturing-i-spring-2009/",
+            "Study Material": "https://www.engineeringdrawing.org/"
+        },
+        "Engineering Economics & Financial Management": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Engineering_Economics_Introduction",
+            "Online Course": "https://www.edx.org/course/engineering-economic-analysis",
+            "Study Material": "https://courses.lumenlearning.com/suny-ece/"
+        },
+
+        # CSE Subjects
+        "Data Structures & Algorithms": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Data_Structures_Introduction",
+            "Online Course": "https://www.coursera.org/specializations/data-structures-algorithms",
+            "Study Material": "https://www.geeksforgeeks.org/data-structures/"
+        },
+        "Operating Systems": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Operating_System_Complete_Course",
+            "Online Course": "https://www.edx.org/course/operating-systems-and-system-programming",
+            "Study Material": "https://www.tutorialspoint.com/operating_system/index.htm"
+        },
+        "Computer Networks": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Computer_Networking_Full_Course",
+            "Online Course": "https://www.edx.org/course/computer-networks",
+            "Study Material": "https://www.geeksforgeeks.org/computer-network-tutorials/"
+        },
+        "Database Management Systems": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Database_Management_Systems_Full_Course",
+            "Online Course": "https://www.edx.org/course/databases-relational-databases-and-sql",
+            "Study Material": "https://www.javatpoint.com/dbms-tutorial"
+        },
+        "Software Engineering": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Software_Engineering_Full_Course",
+            "Online Course": "https://www.coursera.org/learn/software-processes-and-agile-practices",
+            "Study Material": "https://www.tutorialspoint.com/software_engineering/index.htm"
+        },
+        "Web Technologies": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Full_Stack_Web_Development_Tutorial",
+            "Online Course": "https://www.udemy.com/course/the-web-developer-bootcamp/",
+            "Study Material": "https://developer.mozilla.org/en-US/docs/Web/Tutorials"
+        },
+        "Compiler Design": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Compiler_Design_Full_Course",
+            "Online Course": "https://www.edx.org/course/compilers",
+            "Study Material": "https://www.geeksforgeeks.org/compiler-design-tutorials/"
+        },
+        "Cloud Computing": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Cloud_Computing_Full_Course",
+            "Online Course": "https://www.coursera.org/specializations/cloud-computing",
+            "Study Material": "https://www.tutorialspoint.com/cloud_computing/index.htm"
+        },
+        "Cyber Security": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Cyber_Security_Full_Course",
+            "Online Course": "https://www.coursera.org/specializations/cyber-security",
+            "Study Material": "https://www.geeksforgeeks.org/cyber-security-tutorials/"
+        },
+        "Blockchain Technology": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Blockchain_Full_Course",
+            "Online Course": "https://www.coursera.org/specializations/blockchain",
+            "Study Material": "https://www.tutorialspoint.com/blockchain/index.htm"
+        },
+        "Internet of Things (IoT)": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=IoT_Full_Course",
+            "Online Course": "https://www.coursera.org/specializations/internet-of-things",
+            "Study Material": "https://www.tutorialspoint.com/internet_of_things/index.htm"
+        },
+        "Artificial Intelligence": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Artificial_Intelligence_Full_Course",
+            "Online Course": "https://www.coursera.org/learn/ai-for-everyone",
+            "Study Material": "https://www.tutorialspoint.com/artificial_intelligence/index.htm"
+        },
+        "Machine Learning": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Machine_Learning_Full_Course",
+            "Online Course": "https://www.coursera.org/learn/machine-learning",
+            "Study Material": "https://www.geeksforgeeks.org/machine-learning-tutorials/"
+        },
+        "Data Science": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Data_Science_Full_Course",
+            "Online Course": "https://www.coursera.org/specializations/applied-data-science-python",
+            "Study Material": "https://www.geeksforgeeks.org/data-science-tutorials/"
+        },
+        "Big Data Technologies": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Big_Data_Technologies_Introduction",
+            "Online Course": "https://www.coursera.org/specializations/big-data",
+            "Study Material": "https://developer.ibm.com/technologies/big-data/"
+        },
+        "Natural Language Processing (NLP)": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Natural_Language_Processing_Full_Course",
+            "Online Course": "https://www.coursera.org/specializations/natural-language-processing",
+            "Study Material": "https://nlp.stanford.edu/online/courses/"
+        },
+        "Computer Vision": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Computer_Vision_Full_Course",
+            "Online Course": "https://www.udacity.com/course/introduction-to-computer-vision--ud810",
+            "Study Material": "https://www.geeksforgeeks.org/computer-vision-tutorials/"
+        },
+        "Reinforcement Learning": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Reinforcement_Learning_Full_Course",
+            "Online Course": "https://www.coursera.org/specializations/reinforcement-learning",
+            "Study Material": "https://www.deepmind.com/learning-resources"
+        },
+        "Neural Networks": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Neural_Networks_Full_Course",
+            "Online Course": "https://www.coursera.org/learn/neural-networks-deep-learning",
+            "Study Material": "https://www.tutorialspoint.com/neural_networks/index.htm"
+        },
+        "Linear Algebra for Machine Learning": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Linear_Algebra_Math_for_Machine_Learning",
+            "Online Course": "https://www.coursera.org/learn/linear-algebra-machine-learning",
+            "Study Material": "https://machinelearningmastery.com/linear-algebra-for-machine-learning/"
+        },
+        "Object-Oriented Programming (OOP)": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=OOP_Concepts_in_C#",
+            "Online Course": "https://www.softwaretestinghelp.com/object-oriented-programming-in-java/",
+            "Study Material": "https://www.softwaretestinghelp.com/oop-concepts-in-c#/"
+        },
+        "Cryptography & Network Security": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Cryptography_and_Network_Security_Full_Course",
+            "Online Course": "https://www.coursera.org/specializations/cryptography",
+            "Study Material": "https://www.tutorialspoint.com/security_testing/index.htm"
+        },
+        "Software Testing": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Security_Testing_Tutorial",
+            "Online Course": "https://www.coursera.org/specializations/software-testing",
+            "Study Material": "https://www.softwaretestingmaterial.com/"
+        },
+        "Data Mining & Data Warehousing": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Data_Mining_and_Data_Warehousing_Full_Course",
+            "Online Course": "https://www.coursera.org/specializations/data-warehousing",
+            "Study Material": "https://www.geeksforgeeks.org/data-mining-and-warehousing/"
+        },
+        "Business Communication & Ethics": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Simplilearn_Business_Communication_Skills",
+            "Online Course": "https://www.udemy.com/course/free-communication-skills-course/",
+            "Study Material": "https://www.coursera.org/learn/communication-skills"
+        },
+        "Business Analytics": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=Business_Analytics_Full_Course",
+            "Online Course": "https://www.coursera.org/specializations/business-analytics",
+            "Study Material": "https://www.tutorialspoint.com/business_analytics/index.htm"
+        },
+        "Digital Marketing": {
+            "YouTube Tutorial": "https://www.youtube.com/watch?v=The_Effect_of_Cryptocurrency_on_Digital_Marketing",
+            "Online Course": "https://www.udemy.com/course/top-digital-marketing-courses/",
+            "Study Material": "https://www.mdpi.com/journal/sustainability/special_issues/digital_marketing"
+        },
+    }
+
+    # Dropdown to select a subject
+    selected_subject = st.selectbox("Select a subject", options=list(study_content_links.keys()))
+
+    # Display the links for the selected subject
+    if selected_subject:
+        st.write(f"### {selected_subject}")
+        for resource_type, link in study_content_links[selected_subject].items():
+            st.write(f"- **{resource_type}:** [{link}]({link})")
 
     if st.button("Back to Dashboard"):
         st.session_state["page"] = "Dashboard"
