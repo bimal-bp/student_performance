@@ -6,7 +6,7 @@ import pickle
 import random
 
 # Database Connection String
-DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+DB_URL = "postgresql://neondb_owner:npg_1qEB9MOIukVY@ep-broad-snowflake-a5j0v297-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
 def get_db_connection():
     return psycopg2.connect(DB_URL)
@@ -248,7 +248,7 @@ def student_info():
                 subjects_str = ", ".join(selected_subjects)
                 cur.execute(
                     sql.SQL("""
-                        INSERT INTO students (name, age, email, mobile_number, coding_efficiency, math_efficiency, 
+                        INSERT INTO student (name, age, email, mobile_number, coding_efficiency, math_efficiency, 
                         problem_solving_efficiency, conceptual_understanding, time_management, selected_subjects, study_time_per_week, branch)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (email) DO UPDATE SET 
