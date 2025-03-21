@@ -1,3 +1,4 @@
+
 import streamlit as st
 import psycopg2
 from psycopg2 import sql
@@ -216,12 +217,12 @@ def dashboard():
             col1, col2 = st.columns(2)
             with col1:
                 st.write("### Student Information")
-                st.write(f"*Name:* {student[0]}")
-                st.write(f"*Age:* {student[1]}")
-                st.write(f"*Email:* {student[2]}")
-                st.write(f"*Mobile Number:* {student[3]}")
-                st.write(f"*Study Time Per Week:* {student[8]} h/w")
-                st.write(f"*Branch:* {student[9]}")
+                st.write(f"**Name:** {student[0]}")
+                st.write(f"**Age:** {student[1]}")
+                st.write(f"**Email:** {student[2]}")
+                st.write(f"**Mobile Number:** {student[3]}")
+                st.write(f"**Study Time Per Week:** {student[8]} h/w")
+                st.write(f"**Branch:** {student[9]}")
 
             with col2:
                 st.write("### Study Time Allocation")
@@ -231,7 +232,7 @@ def dashboard():
                 problem_solving_eff = student[6]
                 study_allocation = allocate_study_time(selected_subjects, study_time, coding_eff, problem_solving_eff)
                 for subject, hours in study_allocation.items():
-                    st.write(f"- *{subject}:* {hours} h/w")
+                    st.write(f"- **{subject}:** {hours} h/w")
 
             st.markdown("---")
             col3, col4, col5 = st.columns(3)
@@ -283,7 +284,7 @@ def predict_future_score():
         predicted_grade = model.predict([user_data])
 
         # Display the result
-        st.write(f"*Predicted Grade:* {predicted_grade[0]}")
+        st.write(f"**Predicted Grade:** {predicted_grade[0]}")
 
         # Provide suggestions based on the predicted grade
         if predicted_grade[0] == 1:
@@ -330,7 +331,7 @@ def quiz_section():
         selected_questions = st.session_state['selected_questions']
         if st.session_state['current_question'] < len(selected_questions):
             question = selected_questions[st.session_state['current_question']]
-            st.write(f"*Question {st.session_state['current_question'] + 1}:* {question['question']}")
+            st.write(f"**Question {st.session_state['current_question'] + 1}:** {question['question']}")
             user_answer = st.radio("Select your answer:", question['options'], key=f"q{st.session_state['current_question']}", index=None)
             
             if st.button("Submit Answer"):
@@ -346,12 +347,12 @@ def quiz_section():
                     st.warning("Please select an answer before submitting.")
         else:
             st.write("### Quiz Ended!")
-            st.write(f"*Your Score:* {st.session_state['score']}/{len(selected_questions)}")
+            st.write(f"**Your Score:** {st.session_state['score']}/{len(selected_questions)}")
             st.write("### Review Your Answers:")
             for i, (question, user_answer) in enumerate(zip(selected_questions, st.session_state['user_answers'])):
-                st.write(f"*Question {i + 1}:* {question['question']}")
-                st.write(f"*Your Answer:* {user_answer}")
-                st.write(f"*Correct Answer:* {question['answer']}")
+                st.write(f"**Question {i + 1}:** {question['question']}")
+                st.write(f"**Your Answer:** {user_answer}")
+                st.write(f"**Correct Answer:** {question['answer']}")
                 st.write("---")
             if st.button("Restart Quiz"):
                 st.session_state.update({
@@ -560,7 +561,7 @@ def add_study_content():
     if selected_subject:
         st.write(f"### {selected_subject}")
         for resource_type, link in study_content_links[selected_subject].items():
-            st.write(f"- *{resource_type}:* [{link}]({link})")
+            st.write(f"- **{resource_type}:** [{link}]({link})")
 
     if st.button("Back to Dashboard"):
         st.session_state["page"] = "Dashboard"
@@ -581,5 +582,5 @@ def main():
     elif st.session_state["page"] == "Predict Future Score":
         predict_future_score()
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()
