@@ -324,7 +324,7 @@ def dashboard():
                     st.write(f"- **{subject}:** {hours} h/w")
 
             st.markdown("---")
-            col3, col4, col5 = st.columns(3)
+            col3, col4, col5, col6 = st.columns(4)  # Adjusted to 4 columns
             with col3:
                 if st.button("Predict Future Score 🎯"):
                     st.session_state["page"] = "Predict Future Score"
@@ -337,16 +337,13 @@ def dashboard():
                 if st.button("Study Content 📚"):
                     st.session_state["page"] = "Study Content"
                     st.rerun()
-
-            # Add a centered logout button
-            st.markdown("---")
-            col6, col7, col8 = st.columns([1, 2, 1])
-            with col7:
+            with col6:
                 if st.button("Logout", key="logout_button"):
                     # Clear session state and redirect to landing page
                     st.session_state.clear()
                     st.session_state["page"] = "Landing Page"
                     st.rerun()
+
         else:
             st.warning("No records found for the logged-in user.")
     except Exception as e:
