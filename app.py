@@ -8,8 +8,11 @@ import hashlib
 
 # Database Connection Strings
 AUTH_DB_URL = "postgresql://neondb_owner:npg_P0wyolC1KBLW@ep-holy-mud-a5su2ghw-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
-APP_DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
 
+DB_URL = "postgresql://neondb_owner:npg_Qv3eN1JblqYo@ep-tight-sun-a8z1f6um-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+
+def get_db_connection():
+    return psycopg2.connect(DB_URL)
 def get_auth_db_connection():
     return psycopg2.connect(AUTH_DB_URL)
 
