@@ -78,7 +78,86 @@ def allocate_study_time(selected_subjects, total_hours, efficiency_level, proble
         allocated_times[subject] = f"{hours}h {minutes}m"
     
     return allocated_times
-    
+ # Database connection function
+def get_db_connection():
+    conn = psycopg2.connect(
+        dbname="neondb",
+        user="neondb_owner",
+        password="npg_1qEB9MOIukVY",
+        host="ep-broad-snowflake-a5j0v297-pooler.us-east-2.aws.neon.tech",
+        port="5432",
+        sslmode="require"
+    )
+    return conn
+# Login page
+def login_page():
+    st.title("Learn Mate - Student Performance Application")
+    st.header("Login")
+
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT * FROM students WHERE email = %s AND password = %s", (email, password))
+            user = cur.fetchone()
+            if user:
+                st.session_state["email"] = email
+                st.session_state["page"] = "Dashboard"
+                st.success("Login successful!")
+                st.rerun()
+            else:
+                st.error("Invalid email or password.")
+        except Exception as e:
+            st.error(f"Error: {e}")
+        finally:
+            cur.close()
+            conn.close()
+
+    if st.button("Sign Up"):
+        st.session_state["page"] = "Sign Up"
+        st.rerun()
+
+# Signup page
+def signup_page():
+    st.title("Learn Mate - Student Performance Application")
+    st.header("Sign Up")
+
+    name = st.text_input("Name")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    confirm_password = st.text_input("Confirm Password", type="password")
+
+    if st.button("Sign Up"):
+        if password != confirm_password:
+            st.error("Passwords do not match.")
+        else:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            try:
+                cur.execute(
+                    sql.SQL("""
+                        INSERT INTO students (name, email, password)
+                        VALUES (%s, %s, %s)
+                    """),
+                    (name, email, password)
+                )
+                conn.commit()
+                st.success("Sign up successful! Please log in.")
+                st.session_state["page"] = "Login"
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error: {e}")
+            finally:
+                cur.close()
+                conn.close()
+
+    if st.button("Back to Login"):
+        st.session_state["page"] = "Login"
+        st.rerun() 
+        
 def student_info():
     st.title("Learn Mate - Student Performance Application")
     st.header("Student Information")
@@ -568,18 +647,22 @@ def add_study_content():
 
 def main():
     if "page" not in st.session_state:
-        st.session_state["page"] = "Student Info"
+        st.session_state["page"] = "Login"  # Start with the Login page
 
-    if st.session_state["page"] == "Student Info":
+    if st.session_state["page"] == "Login":
+        login_page()
+    elif st.session_state["page"] == "Sign Up":
+        signup_page()
+    elif st.session_state["page"] == "Student Info":
         student_info()
     elif st.session_state["page"] == "Dashboard":
         dashboard()
     elif st.session_state["page"] == "Quiz":
         quiz_section()
     elif st.session_state["page"] == "Study Content":
-        add_study_content()
+        add_study_content() 
     elif st.session_state["page"] == "Predict Future Score":
         predict_future_score()
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     main()
