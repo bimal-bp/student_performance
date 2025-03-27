@@ -677,7 +677,42 @@ def landing_page():
             st.session_state["page"] = "Login"
             st.rerun()
 
+import streamlit as st
+import random
+
+# Common style with random gradient background
+def set_random_gradient():
+    colors = ["#e6f7ff", "#b3e0ff", "#ffb3e6", "#b3ffb3", "#ffffb3", "#ffb3b3",
+              "#d9b3ff", "#b3fff2", "#ffd9b3", "#b3d9ff"]
+    color1, color2 = random.sample(colors, 2)
+    
+    st.markdown(f"""
+    <style>
+        .stApp {{
+            background: linear-gradient(135deg, {color1} 0%, {color2} 100%);
+            transition: background 1s ease;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # JavaScript to change background periodically
+    st.markdown(f"""
+    <script>
+    const colors = {colors};
+    function changeBackground() {{
+        const color1 = colors[Math.floor(Math.random() * colors.length)];
+        const color2 = colors[Math.floor(Math.random() * colors.length)];
+        document.querySelector('.stApp').style.background = 
+            `linear-gradient(135deg, ${{color1}} 0%, ${{color2}} 100%)`;
+    }}
+    setInterval(changeBackground, 3000); // Change every 3 seconds
+    </script>
+    """, unsafe_allow_html=True)
+
 def main():
+    st.set_page_config(page_title="ORBT-LEARN", layout="wide")
+    set_random_gradient()  # Apply the random gradient to all pages
+    
     if "page" not in st.session_state:
         st.session_state["page"] = "Landing Page"
 
